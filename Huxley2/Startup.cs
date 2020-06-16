@@ -50,6 +50,7 @@ namespace Huxley2
                 new LDBSVRefServiceSoapClient(LDBSVRefServiceSoapClient.EndpointConfiguration.LDBSVRefServiceSoap));
             services.AddSingleton<IAccessTokenService, AccessTokenService>();
             services.AddSingleton<ICrsService, CrsService>();
+            services.AddSingleton<IStationService, CrsStationService>();
             services.AddSingleton<IDateTimeService, DateTimeService>();
             services.AddSingleton<IMapperService, MapperService>();
             services.AddSingleton<IStationBoardService, StationBoardService>();
@@ -67,6 +68,7 @@ namespace Huxley2
             IWebHostEnvironment env,
             ILogger<Startup> logger,
             ICrsService crsService,
+            IStationService stationService,
             IUpdateCheckService updateCheckService)
         {
             logger.LogInformation("Configuring Huxley 2 web API application");
@@ -102,6 +104,7 @@ namespace Huxley2
             {
                 logger.LogInformation("Loading CRS station codes from remote source");
                 await crsService.LoadCrsCodes();
+                await stationService.LoadStations();
                 if (_enableUpdateCheck)
                 {
                     logger.LogInformation("Checking for any available updates to Huxley");
