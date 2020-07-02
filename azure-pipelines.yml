@@ -64,11 +64,7 @@ stages:
         ConnectionType: 'AzureRM'
         azureSubscription: 'Free Trial(72da14b5-33fc-4f81-8d8a-1053bbe3a660)'
         appType: 'webAppLinux'
-<<<<<<< HEAD
         WebAppName: 'OnRails'
-=======
-        WebAppName: 'huxley2-dev'
->>>>>>> 308bfbe (Change deploy target for dev)
         packageForLinux: '$(Build.ArtifactStagingDirectory)/**/Huxley2.zip'
         RuntimeStack: 'DOTNETCORE|6.0'
 =======
