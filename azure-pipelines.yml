@@ -1,5 +1,5 @@
 trigger:
-- master
+- feature/nrestations
 
 variables:
   buildConfiguration: 'Release'
