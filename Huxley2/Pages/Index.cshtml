@@ -54,6 +54,9 @@
             is available
         </div>
     }
+     <p>
+        A fork of Huxley2 which adds mobile friendly data to use with apps and services
+    </p>
 </div>
 
 <h2>Contents</h2>
@@ -223,6 +226,15 @@
     </li>
 </ul>
 
+<h3 id="v2.1-changes">2.1 Update</h2>
+<ul>
+    <li>
+        Added Stations controller to return all national rail stations with geo-coordinates.
+    </li>
+    <li>
+        The station data is available in the public domain from <a href="http://naptan.app.dft.gov.uk/datarequest/help">Naptan</a>
+    </li>
+ </ul>
 <h2 id="quick-start">Quick Start</h2>
 <p>
     Follow these steps to get going:
@@ -505,16 +517,16 @@
     If <code>query</code> is provided then only station names matching it will be returned along with their CRS codes.
 </p>
 <details>
-    <summary>Example response for<code>/crs/oswald</code></summary>
+    <summary>Example response for<code>/crs/peter</code></summary>
     <pre>
 [
   {
-    "stationName": "Church & Oswaldtwistle",
-    "crsCode": "CTW"
+    "stationName": "Peterborough",
+    "crsCode": "PBO"
   },
   {
-    "stationName": "Lazonby & Kirkoswald",
-    "crsCode": "LZB"
+    "stationName": "Petersfield",
+    "crsCode": "PTR"
   }
 ]
 </pre>
@@ -523,6 +535,42 @@
     <code>
         <a href="/crs/london terminals">/crs/london terminals</a>
     </code> returns all codes in the <a href="https://en.wikipedia.org/wiki/London_station_group">London station group</a>
+</p>
+<h3 id="crs">Station Locations</h3>
+<p><abbr title="Station Locations">Station</abbr> locations are available from the following endpoint:</p>
+<p>
+    <code>
+        <a href="/stations">/stations/{query}</a>
+    </code>
+</p>
+<p>
+    If <code>query</code> is omitted then all stations are returned along with their respective station names and geo-coordinates.
+    <br/>
+    If <code>query</code> is provided then only station names matching it will be returned along with their CRS codes and geo-coordinates.
+</p>
+<details>
+    <summary>Example response for<code>/stations/peter</code></summary>
+    <pre>
+[
+  {
+    "stationName": "Peterborough",
+    "crsCode": "PBO",
+    "latitude":52.57497366063303,
+    "longitude":-0.24983696937880237
+  },
+  {
+    "stationName": "Petersfield",
+    "crsCode": "PTR",
+    "latitude":51.006724600922816,
+    "longitude":-0.9411367352535371
+  }
+]
+</pre>
+</details>
+<p>
+    <code>
+        <a href="/stations/london terminals">/stations/london terminals</a>
+    </code> returns all station locations in the <a href="https://en.wikipedia.org/wiki/London_station_group">London station group</a>
 </p>
 <h3 id="service">Service</h3>
 <p>
@@ -545,7 +593,7 @@
 
 <h2 id="source-code">Source Code</h2>
 <p>
-    <a href="https://github.com/jpsingleton/Huxley2">Source code is available on GitHub</a>.
+    <a href="https://github.com/azaka01/Huxley2">Source code is available on GitHub</a>.
 </p>
 <p>
     This project is treeware! If you found it useful then please <a href="https://offset.earth/unitsetsoftware" rel="nofollow">plant a tree for me</a>.
@@ -564,7 +612,7 @@
 </p>
 
 <hr/>
-<p>&copy; @DateTime.Today.Year <a href="https://unop.uk">James Singleton</a></p>
+<p>a fork of <a href="https://github.com/jpsingleton/Huxley2">Huxley 2</a> developed by <a href="https://unop.uk">James Singleton</a></p>
 <p>
     <img src="~/img/nre-logo.png" alt="powered by National Rail Enquiries" width="256"/>
 </p>

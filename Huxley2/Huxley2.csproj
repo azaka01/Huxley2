@@ -7,8 +7,9 @@
         <Nullable>enable</Nullable>
         <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
         <AssemblyName>Huxley2</AssemblyName>
-        <Version>2.0.0</Version>
+        <Version>2.1.0</Version>
         <Copyright>© James Singleton</Copyright>
+        <Description>A fork of Huxley2 which adds mobile friendly data</Description>
     </PropertyGroup>
 
     <ItemGroup>

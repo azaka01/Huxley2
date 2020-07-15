@@ -1,3 +1,5 @@
+// Written by Awais Zaka EUPL-1.2 (see the LICENSE file for the full license governing this code).
+
 using System.Collections.Generic;
 using Huxley2.Interfaces;
 using Huxley2.Models;
