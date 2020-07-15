@@ -17,48 +17,49 @@
         <div class="row">
             <div class="col">
 
-                <div class="jumbotron mt-4 p-4">
-                    <img src="~/img/huxley.png" alt="Huxley proxy logo" class="float-right" width="100" />
-                    <h1 class="display-4">Huxley 2 <small>Community Edition</small></h1>
-                    <p class="lead">A cross-platform JSON proxy for the GB railway Live Departure Boards SOAP API</p>
-                    <hr class="my-4">
-                    <p>
-                        Huxley 2 is a <abbr title="Cross-Origin Resource Sharing">CORS</abbr> enabled
-                        cross-platform <abbr title="JavaScript Object Notation">JSON</abbr>
-                        <abbr title="Representational State Transfer">ReST</abbr> proxy for the
-                        <abbr title="Great Britain">GB</abbr>
-                        <abbr title="National Rail Enquiries">NRE</abbr>
-                        <abbr title="Live Departure Boards">LDB</abbr>
-                        <abbr title="Windows Communication Foundation">WCF</abbr>
-                        <a href="http://harmful.cat-v.org/software/xml/soap/simple">
-                            <abbr title="Simple Object Access Protocol">SOAP</abbr>
-                        </a> <abbr title="Extensible Markup Language">XML</abbr>
-                        <abbr title="Application Programming Interface">API</abbr>
-                        (called <a href="https://www.nationalrail.co.uk/100296.aspx">Darwin</a>).
-                        It supports both the Public Version (PV) and the Staff Version (SV).
-                        It's built with ASP.NET Core <abbr title="Long Term Support">LTS</abbr> (.NET 6.0), C# 10 and lots of
-                        abbreviations!
-                    </p>
-                    <p>
-                        The primary purpose of Huxley 2 is to allow easy use of the LDB API from browser-based
-                        client-side
-                        <abbr title="Progressive Web Applications">PWAs</abbr> made with JavaScript or TypeScript.
-                        Additionally, it opens up the Windows enterprise API to agile developers on macOS and Linux.
-                    </p>
-                    <p>
-                        <a class="btn btn-success btn-lg mt-3" href="#quick-start" role="button">Get Started</a>
-                    </p>
-                    <p>
-                        Version @UpdateCheckService.CurrentVersion
-                    </p>
-                    @if (UpdateCheckService.UpdateAvailable)
-                    {
-                        <div class="alert alert-info m-0" role="alert">
-                            <a href="@UpdateCheckService.UpdateUrl?.AbsoluteUri">@UpdateCheckService.AvailableVersion</a>
-                            is available
-                        </div>
-                    }
-                </div>
+<div class="jumbotron mt-4 p-4">
+    <img src="~/img/huxley.png" alt="Huxley proxy logo" class="float-right" width="100"/>
+    <h1 class="display-4">Huxley 2 <small>Community Edition</small></h1>
+    <p class="lead">A cross-platform JSON proxy for the GB railway Live Departure Boards SOAP API</p>
+    <hr class="my-4">
+    <p>
+        Huxley 2 is a <abbr title="Cross-Origin Resource Sharing">CORS</abbr> enabled
+        cross-platform <abbr title="JavaScript Object Notation">JSON</abbr>
+        <abbr title="Representational State Transfer">ReST</abbr> proxy for the
+        <abbr title="Great Britain">GB</abbr>
+        <abbr title="National Rail Enquiries">NRE</abbr>
+        <abbr title="Live Departure Boards">LDB</abbr>
+        <abbr title="Windows Communication Foundation">WCF</abbr>
+        <a href="http://harmful.cat-v.org/software/xml/soap/simple">
+            <abbr title="Simple Object Access Protocol">SOAP</abbr>
+        </a> <abbr title="Extensible Markup Language">XML</abbr>
+        <abbr title="Application Programming Interface">API</abbr>
+        (called <a href="https://www.nationalrail.co.uk/100296.aspx">Darwin</a>).
+        It supports both the Public Version (PV) and the Staff Version (SV).
+        It's built with ASP.NET Core <abbr title="Long Term Support">LTS</abbr>, C# 8.0 and lots of abbreviations!
+    </p>
+    <p>
+        The primary purpose of Huxley 2 is to allow easy use of the LDB API from browser-based client-side
+        <abbr title="Progressive Web Applications">PWAs</abbr> made with JavaScript or TypeScript.
+        Additionally, it opens up the Windows enterprise API to agile developers on macOS and Linux.
+    </p>
+    <p>
+        <a class="btn btn-success btn-lg mt-3" href="#quick-start" role="button">Get Started</a>
+    </p>
+    <p>
+        Version @UpdateCheckService.CurrentVersion
+    </p>
+    @if (UpdateCheckService.UpdateAvailable)
+    {
+        <div class="alert alert-info m-0" role="alert">
+            <a href="@UpdateCheckService.UpdateUrl?.AbsoluteUri">@UpdateCheckService.AvailableVersion</a>
+            is available
+        </div>
+    }
+     <p>
+        A fork of Huxley2 which adds mobile friendly data to use with apps and services
+    </p>
+</div>
 
                 <h2>Contents</h2>
                 <ul>
@@ -248,40 +249,32 @@
                     If you don't want to append the token then read on.
                 </p>
 
-                <h2 id="access-tokens">Access Tokens</h2>
-                <p>
-                    You will need to add your access token to the configuration file or URL.
-                    You can register to obtain one <a
-                        href="https://realtime.nationalrail.co.uk/OpenLDBWSRegistration/Registration">here</a>
-                    (or <a href="http://openldbsv.nationalrail.co.uk/self-signup/register">here</a> for the staff
-                    version).
-                </p>
-                <p>
-                    Append <code>accessToken={Your GUID token}</code> to the URL for every request.
-                    If using the staff versions then you will need to use your staff token.
-                </p>
-                <p>
-                    There is optional support for configuring the access token server-side.
-                    So you don't need to worry about revealing it in URLs or source code.
-                </p>
-                <p>
-                    In the <code>appsettings.json</code> file you can set tokens and other settings.
-                    You can set <code>DarwinAccessToken</code> to your NRE access token.
-                    If you leave <code>ClientAccessToken</code> as an empty string then no token is required in the
-                    Huxley URL.
-                    If you set <code>ClientAccessToken</code> to a string and it matches the token in the URL then the
-                    <code>DarwinAccessToken</code> will be used instead in the SOAP call.
-                    Otherwise the URL token is passed straight through.
-                </p>
-                <p>
-                    You can do the same with <code>DarwinStaffAccessToken</code> if you are using the staff version of
-                    the API.
-                    Both share a <code>ClientAccessToken</code> so your client only needs one token (or none).
-                </p>
-                <p>
-                    <strong>N.B.</strong> You should set up these tokens in your deployment platform and not in your
-                    source code repository. You'll notice that the values are blank by default.
-                </p>
+<h3 id="v2.1-changes">2.1 Update</h2>
+<ul>
+    <li>
+        Added Stations controller to return all national rail stations with geo-coordinates.
+    </li>
+    <li>
+        The station data is available in the public domain from <a href="http://naptan.app.dft.gov.uk/datarequest/help">Naptan</a>
+    </li>
+ </ul>
+<h2 id="quick-start">Quick Start</h2>
+<p>
+    Follow these steps to get going:
+</p>
+<ul>
+    <li>
+        Get an API access token from NRE
+        (<a href="https://realtime.nationalrail.co.uk/OpenLDBWSRegistration/Registration">public</a>
+        or <a href="http://openldbsv.nationalrail.co.uk/self-signup/register">staff</a> or both)
+    </li>
+    <li>
+        Append <code>accessToken=TOKEN</code> to the URL for every request
+    </li>
+</ul>
+<p>
+    If you don't want to append the token then read on.
+</p>
 
                 <h2 id="api-endpoints">API Endpoints</h2>
                 <p>
@@ -522,25 +515,23 @@
                     <code>
         <a href="/crs">/crs/{query}</a>
     </code>
-                </p>
-                <p>
-                    If <code>query</code> is omitted then all CRS codes are returned along with their respective station
-                    names.
-                    <br />
-                    If <code>query</code> is provided then only station names matching it will be returned along with
-                    their CRS codes.
-                </p>
-                <details>
-                    <summary>Example response for<code>/crs/oswald</code></summary>
-                    <pre>
+</p>
+<p>
+    If <code>query</code> is omitted then all CRS codes are returned along with their respective station names.
+    <br/>
+    If <code>query</code> is provided then only station names matching it will be returned along with their CRS codes.
+</p>
+<details>
+    <summary>Example response for<code>/crs/peter</code></summary>
+    <pre>
 [
   {
-    "stationName": "Church & Oswaldtwistle",
-    "crsCode": "CTW"
+    "stationName": "Peterborough",
+    "crsCode": "PBO"
   },
   {
-    "stationName": "Lazonby & Kirkoswald",
-    "crsCode": "LZB"
+    "stationName": "Petersfield",
+    "crsCode": "PTR"
   }
 ]
 </pre>
@@ -548,13 +539,48 @@
                 <p>
                     <code>
         <a href="/crs/london terminals">/crs/london terminals</a>
-    </code> returns all codes in the <a href="https://en.wikipedia.org/wiki/London_station_group">London station
-                        group</a>
-                </p>
-                <h3 id="service">Service</h3>
-                <p>
-                    <code>
-        <a href="/service/">/service/{Service ID}</a>
+    </code> returns all codes in the <a href="https://en.wikipedia.org/wiki/London_station_group">London station group</a>
+</p>
+<h3 id="crs">Station Locations</h3>
+<p><abbr title="Station Locations">Station</abbr> locations are available from the following endpoint:</p>
+<p>
+    <code>
+        <a href="/stations">/stations/{query}</a>
+    </code>
+</p>
+<p>
+    If <code>query</code> is omitted then all stations are returned along with their respective station names and geo-coordinates.
+    <br/>
+    If <code>query</code> is provided then only station names matching it will be returned along with their CRS codes and geo-coordinates.
+</p>
+<details>
+    <summary>Example response for<code>/stations/peter</code></summary>
+    <pre>
+[
+  {
+    "stationName": "Peterborough",
+    "crsCode": "PBO",
+    "latitude":52.57497366063303,
+    "longitude":-0.24983696937880237
+  },
+  {
+    "stationName": "Petersfield",
+    "crsCode": "PTR",
+    "latitude":51.006724600922816,
+    "longitude":-0.9411367352535371
+  }
+]
+</pre>
+</details>
+<p>
+    <code>
+        <a href="/stations/london terminals">/stations/london terminals</a>
+    </code> returns all station locations in the <a href="https://en.wikipedia.org/wiki/London_station_group">London station group</a>
+</p>
+<h3 id="service">Service</h3>
+<p>
+    <code>
+        <a href="/service/_vEUZIJWLTtViDnv5GVpuw">/service/{Service ID}</a>
     </code>
                 </p>
                 <p>
@@ -575,18 +601,16 @@
                     access token must be used (unless configured server side).
                 </p>
 
-                <h2 id="source-code">Source Code</h2>
-                <p>
-                    <a href="https://github.com/jpsingleton/Huxley2">Source code is available on GitHub</a>.
-                </p>
-                <p>
-                    This project is treeware! If you found it useful then please <a
-                        href="https://offset.earth/unitsetsoftware" rel="nofollow">plant a tree for me</a>.
-                </p>
-                <p>
-                    <a href="https://offset.earth/unitsetsoftware" rel="nofollow"><img src="~/img/buy-me-a-tree.svg"
-                            alt="Buy me a tree!"></a>
-                </p>
+<h2 id="source-code">Source Code</h2>
+<p>
+    <a href="https://github.com/azaka01/Huxley2">Source code is available on GitHub</a>.
+</p>
+<p>
+    This project is treeware! If you found it useful then please <a href="https://offset.earth/unitsetsoftware" rel="nofollow">plant a tree for me</a>.
+</p>
+<p>
+    <a href="https://offset.earth/unitsetsoftware" rel="nofollow"><img src="~/img/buy-me-a-tree.svg" alt="Buy me a tree!"></a>
+</p>
 
                 <h2 id="license">License</h2>
                 <p>
@@ -599,11 +623,11 @@
                     (like a compatible and interoperable <abbr title="Affero General Public License">AGPL</abbr>).
                 </p>
 
-                <hr />
-                <p>&copy; @DateTime.Today.Year <a href="https://unop.uk">James Singleton</a></p>
-                <p>
-                    <img src="~/img/nre-logo.png" alt="powered by National Rail Enquiries" width="256" />
-                </p>
+<hr/>
+<p>a fork of <a href="https://github.com/jpsingleton/Huxley2">Huxley 2</a> developed by <a href="https://unop.uk">James Singleton</a></p>
+<p>
+    <img src="~/img/nre-logo.png" alt="powered by National Rail Enquiries" width="256"/>
+</p>
 
             </div>
         </div>
