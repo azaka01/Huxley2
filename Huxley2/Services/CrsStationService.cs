@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CsvHelper;
 using GeoUK;
@@ -47,9 +48,29 @@ namespace Huxley2.Services
         public async Task LoadStations() {
             try {
                 await GetCrsCodesFromCsvDownload();
+                await GetStationsFromJSONSource();
             } catch (CrsServiceException) {
                 // A failure here means we can't proceed
                 return;
+            }
+        }
+
+        private async Task GetStationsFromJSONSource() {
+            try {
+                var jsonUri = new Uri(_config["RailStationsAddendumUrl"]);
+                var jsonStream = await _httpClient.GetStreamAsync(jsonUri);
+                var stations = await JsonSerializer.DeserializeAsync<List<CrsStation>>(jsonStream);
+                _stations.AddRange(stations);
+
+            } catch (Exception e) when (
+                  e is HttpRequestException ||
+                  e is SocketException
+                  ) {
+                _logger.LogWarning(e, "Failed to load station list from JSON download");
+            } catch (Exception ex) {
+                _logger.LogError(ex, "Failed to load station list from JSON download");
+                throw new CrsServiceException(
+                    "The CRS service failed to load the station list from the JSON file download.", ex);
             }
         }
 
