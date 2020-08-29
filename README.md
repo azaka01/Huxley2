@@ -1,8 +1,8 @@
-# Huxley 2 Community Edition
+# On Rails Proxy Service
 
-A cross-platform JSON proxy for the GB railway Live Departure Boards SOAP API
+A mobile friendly JSON REST proxy for the GB railway Live Departure Boards SOAP API.
 
-![Huxley](Huxley2/wwwroot/img/huxley.png)
+Forked from the [Huxley2](https://github.com/jpsingleton/Huxley2) project 
 
 This project is treeware! If you found it useful then please [plant a tree for me](https://offset.earth/unitsetsoftware).
 
@@ -10,16 +10,13 @@ This project is treeware! If you found it useful then please [plant a tree for m
 
 ## About
 
-Huxley 2 is a CORS enabled cross-platform JSON ReST proxy for the GB NRE LDB WCF SOAP XML API (called Darwin). It supports both the Public Version (PV) and the Staff Version (SV). It's built with ASP.NET Core LTS, C# 8.0 and lots of abbreviations!
-
-The primary purpose of Huxley 2 is to allow easy use of the LDB API from browser-based client-side PWAs made with JavaScript or TypeScript. Additionally, it opens up the Windows enterprise API to agile developers on macOS and Linux. 
+On Rails adds stations locations API on top of the Huxley2 Proxy service.
 
 ## Get Started
 
-Check out [the live demo server](https://huxley2.azurewebsites.net/) for API documentation and to give it a try.
+Check out [the live server](https://onrails.azurewebsites.net/) for API documentation
 
-The demo server comes with zero guarantees of uptime.
-It can (and regularly does) go down or break.
+A [mobile client SDK](https://github.com/IntSoftDev/simian) - currently on Android only - is available that facilitates integration with the proxy.
 
 ## Get Your Own
 
