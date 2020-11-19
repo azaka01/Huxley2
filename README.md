@@ -12,7 +12,7 @@ _Note:_ Huxley 2 is considered feature-complete and will only be updated to fix 
 
 On Rails adds stations locations API on top of the Huxley2 Proxy service
 
-The Huxley2 Proxy service connects to the NRE Darwin feed which is an aggregated real-time train feed for all operators in the UK
+The Huxley2 Proxy service connects to the NRE Darwin feed which is an aggregated real-time train feed for all operators in the UK.
 
 Station Data is downloaded from [Naptan](http://naptan.app.dft.gov.uk/datarequest/help) and other sources where the Naptan data isn't up to date
 
