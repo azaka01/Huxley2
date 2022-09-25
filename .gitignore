@@ -338,3 +338,12 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+# Env variables
+.env
+
+# Visual Studio Code
+.vscode
+
+# Docker build dir
+out/
