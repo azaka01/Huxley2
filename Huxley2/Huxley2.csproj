@@ -7,29 +7,32 @@
         <Nullable>enable</Nullable>
         <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
         <AssemblyName>Huxley2</AssemblyName>
-        <Version>2.1.0</Version>
+        <Version>2.2.0</Version>
         <Copyright>© James Singleton</Copyright>
         <Description>A fork of Huxley2 which adds mobile friendly data</Description>
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="IeuanWalker.GeoUK" />
+    </ItemGroup>
+    <ItemGroup>
         <None Include="..\.editorconfig" Link=".editorconfig" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CsvHelper" Version="15.0.4" />
-        <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
-        <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
+        <PackageReference Include="CsvHelper" Version="28.0.1" />
+        <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
+        <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.2" />
-        <PackageReference Include="System.ServiceModel.Duplex" Version="4.7.0" />
-        <PackageReference Include="System.ServiceModel.Http" Version="4.7.0" />
-        <PackageReference Include="System.ServiceModel.NetTcp" Version="4.7.0" />
-        <PackageReference Include="System.ServiceModel.Security" Version="4.7.0" />
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.9" />
+        <PackageReference Include="System.ServiceModel.Duplex" Version="4.10.0" />
+        <PackageReference Include="System.ServiceModel.Http" Version="4.10.0" />
+        <PackageReference Include="System.ServiceModel.NetTcp" Version="4.10.0" />
+        <PackageReference Include="System.ServiceModel.Security" Version="4.10.0" />
         <PackageReference Include="GeoCoordinate" Version="2.0.1" />
-        <PackageReference Include="GeoUK" Version="1.1.0" />
+        <PackageReference Include="IeuanWalker.GeoUK" Version="1.0.5" />
     </ItemGroup>
 
     <ItemGroup>
