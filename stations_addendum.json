@@ -1,5 +1,18 @@
 [
     {
+        "Latitude": 55.8506,
+        "StationName": "Reston",
+        "CrsCode": "RSN",
+        "Longitude": -2.1972
+    },
+    {
+        "Latitude": 51.519108,
+        "StationName": "Barking Riverside",
+        "Longitude": 0.114764,
+        "CrsCode": "BGV"
+    },
+    
+    {
         "Latitude": 51.5061,
         "StationName": "Canary Wharf (Elizabeth Line)",
         "CrsCode": "CWX",
