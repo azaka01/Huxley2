@@ -1,0 +1,117 @@
+[
+    {
+        "Latitude": 55.8506,
+        "StationName": "Reston",
+        "CrsCode": "RSN",
+        "Longitude": -2.1972
+    },
+    {
+        "Latitude": 51.519108,
+        "StationName": "Barking Riverside",
+        "Longitude": 0.114764,
+        "CrsCode": "BGV"
+    },
+    
+    {
+        "Latitude": 51.5061,
+        "StationName": "Canary Wharf (Elizabeth Line)",
+        "CrsCode": "CWX",
+        "Longitude": -0.01578
+    },
+    {
+        "Latitude": 51.491578,
+        "StationName": "Woolwich (Elizabeth Line)",
+        "Longitude": 0.071819,
+        "CrsCode": "WWC"
+    },
+    {
+        "Latitude": 51.5162,
+        "StationName": "Tottenham Court Road",
+        "Longitude": -0.1309,
+        "CrsCode": "TCR"
+    },
+    {
+        "Latitude": 51.509639,
+        "StationName": "Custom House",
+        "Longitude": 0.025894,
+        "CrsCode": "CUS"
+    },
+    {
+        "Latitude": 52.33415,
+        "StationName": "Soham",
+        "CrsCode": "SOJ",
+        "Longitude": 0.3277
+    },
+    {
+        "Latitude": 57.243611,
+        "StationName": "Kintore",
+        "CrsCode": "KTR",
+        "Longitude": -2.350278
+    },
+    {
+        "Latitude": 52.44,
+        "StationName": "Bow Street",
+        "CrsCode": "BOW",
+        "Longitude": -4.03
+    },
+    {
+        "Latitude": 54.7638,
+        "StationName": "Horden",
+        "CrsCode": "HRE",
+        "Longitude": -1.3073
+    },
+    {
+        "Latitude": 53.393744,
+        "StationName": "Warrington West",
+        "CrsCode": "WAW",
+        "Longitude": -2.636929
+    },
+    {
+        "Latitude": 50.835161,
+        "StationName": "Bruxelles Midi",
+        "CrsCode": "BXS",
+        "Longitude": 4.335222
+    },
+    {
+        "Latitude": 52.378333,
+        "StationName": "Amsterdam Centraal Station",
+        "CrsCode": "AMS",
+        "Longitude": 4.9
+    },
+    {
+        "Latitude": 43.3032794,
+        "Longitude": 5.380142,
+        "StationName": "Marseille St Charles",
+        "CrsCode": "MSC"
+    },
+    {
+        "Latitude": 50.6394444, 
+        "StationName": "Lille Europe", 
+        "CrsCode": "LIU", 
+        "Longitude": 3.0763889
+    }, 
+    {
+        "Latitude": 48.869722, 
+        "StationName": "Marne La Vallee", 
+        "CrsCode": "MCK", 
+        "Longitude": 2.782778
+    }, 
+    {
+        "Latitude": 48.8809, 
+        "StationName": "Paris Nord", 
+        "CrsCode": "PBN", 
+        "Longitude": 2.3553
+    }, 
+    {
+        "Latitude": 50.9015, 
+        "StationName": "Calais Frethun", 
+        "CrsCode": "FRH", 
+        "Longitude": 1.81152
+    }, 
+    {
+        "Latitude": 45.6168981, 
+        "StationName": "Bourg St Maurice", 
+        "CrsCode": "XIB", 
+        "Longitude": 6.7734105
+    }
+]

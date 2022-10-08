@@ -18,6 +18,7 @@ using Huxley2.Interfaces;
 using Huxley2.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Convert = GeoUK.Convert;
 
 namespace Huxley2.Services
 {
@@ -135,14 +136,16 @@ namespace Huxley2.Services
         }
 
         private LatitudeLongitude GetLatLon(double easting, double northing) {
-            var cartesian = GeoUK.Convert.ToCartesian(new Airy1830(),
-                                                      new BritishNationalGrid(),
-                                                      new EastingNorthing(
-                                                            easting,
-                                                            northing));
-            var wgsCartesian = Transform.Osgb36ToEtrs89(cartesian);
-            return GeoUK.Convert.ToLatitudeLongitude(new Wgs84(), wgsCartesian);
+            // 1.Convert to Cartesian
+            Cartesian cartesian = Convert.ToCartesian(new Airy1830(),
+                new BritishNationalGrid(),
+                new EastingNorthing(easting, northing));
+
+            // 2. Transform from OSBB36 datum to ETRS89 datum
+            Cartesian wgsCartesian = Transform.Osgb36ToEtrs89(cartesian); //ETRS89 is effectively WGS84
+
+            // 3. Convert back to Latitude/Longitude
+            return Convert.ToLatitudeLongitude(new Wgs84(), wgsCartesian);
         }
     }
-
 }
