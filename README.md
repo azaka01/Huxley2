@@ -18,7 +18,7 @@ Station Data is downloaded from [Naptan](http://naptan.app.dft.gov.uk/datareques
 
 ## Get Started
 
-Check out [the live server](https://onrails.azurewebsites.net/) for API documentation
+Check out the [live server](https://onrails-test.azurewebsites.net/) for API documentation.
 
 A [mobile client SDK](https://github.com/IntSoftDev/NRStationsKMP) is also available for accessing station locations via the proxy.
 
