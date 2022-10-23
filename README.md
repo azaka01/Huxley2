@@ -10,7 +10,7 @@ _Note:_ Huxley 2 is considered feature-complete and will only be updated to fix 
 
 ## About
 
-On Rails adds stations locations API on top of the Huxley2 Proxy service
+On Rails adds UK national rail stations locations API on top of the Huxley2 Proxy service
 
 The Huxley2 Proxy service connects to the NRE Darwin feed which is an aggregated real-time train feed for all operators in the UK.
 
@@ -18,9 +18,9 @@ Station Data is downloaded from [Naptan](http://naptan.app.dft.gov.uk/datareques
 
 ## Get Started
 
-Check out [the live server](https://onrails.azurewebsites.net/) for API documentation
+Check out the [live server](https://onrails-test.azurewebsites.net/) for API documentation.
 
-A [mobile client SDK](https://github.com/IntSoftDev/simian) - currently on Android only - is available that facilitates integration with the proxy.
+A [mobile client SDK](https://github.com/IntSoftDev/NRStationsKMP) is also available for accessing station locations via the proxy.
 
 ## Get Your Own
 
