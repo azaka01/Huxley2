@@ -22,17 +22,6 @@ namespace Huxley2Tests.OpenLDBWS
         }
 
         [Fact]
-        public void ServiceItemIdIsGuidEncoded()
-        {
-            var expected = Guid.NewGuid();
-            var serviceItem = new BaseServiceItem
-            {
-                serviceID = Convert.ToBase64String(expected.ToByteArray())
-            };
-            Assert.Equal(expected, serviceItem.ServiceIdGuid);
-        }
-
-        [Fact]
         public void ServiceItemIdIsUrlSafeEncoded()
         {
             var serviceItem = new BaseServiceItem

@@ -8,6 +8,7 @@ namespace Huxley2.Interfaces
     public interface IServiceDetailsService
     {
         Task<object> GetServiceDetailsAsync(ServiceRequest request);
+        Task<object> GetServiceDetailsAsyncWithoutBase64Encoding(ServiceRequest request);
         string GenerateChecksum(object service);
     }
 }

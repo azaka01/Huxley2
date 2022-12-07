@@ -49,7 +49,7 @@ namespace Huxley2.Controllers
                     queryRequest;
 
                 var clock = Stopwatch.StartNew();
-                var service = await _serviceDetailsService.GetServiceDetailsAsync(request);
+                var service = await _serviceDetailsService.GetServiceDetailsAsyncWithoutBase64Encoding(request);
                 clock.Stop();
                 _logger.LogInformation("Open LDB API time {ElapsedMilliseconds:#,#}ms",
                     clock.ElapsedMilliseconds);

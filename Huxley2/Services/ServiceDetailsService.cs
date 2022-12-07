@@ -31,6 +31,18 @@ namespace Huxley2.Services
             _staffSoapClient = staffSoapClient;
         }
 
+        // The Base64 encoded ServiceID data is broken and there are no guarantees provided by NRE that it will be Base64 compliant
+        // Work on the assumption that the ServiceID is urlEncoded which will suffice to make a successful request
+        public async Task<object> GetServiceDetailsAsyncWithoutBase64Encoding(ServiceRequest request)
+        {
+            _logger.LogInformation($"Calling service details SOAP endpoint for {request.ServiceId}");
+            var s = await _soapClient.GetServiceDetailsAsync(new GetServiceDetailsRequest {
+                AccessToken = _accessTokenService.MakeAccessToken(request),
+                serviceID = request.ServiceId,
+            });
+            return s.GetServiceDetailsResult;
+        }
+
         public async Task<object> GetServiceDetailsAsync(ServiceRequest request)
         {
             // The (non-staff) Darwin API requires service ID to be a standard base 64 string
