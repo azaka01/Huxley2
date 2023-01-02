@@ -1,5 +1,11 @@
 [
     {
+        "Latitude": 51.514,
+        "StationName": "Bond Street",
+        "CrsCode": "BDS",
+        "Longitude": -0.15
+    },
+    {
         "Latitude": 55.8506,
         "StationName": "Reston",
         "CrsCode": "RSN",
