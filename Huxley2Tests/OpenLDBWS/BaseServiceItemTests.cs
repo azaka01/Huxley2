@@ -28,7 +28,7 @@ namespace Huxley2Tests.OpenLDBWS
             {
                 serviceID = Convert.ToBase64String(Guid.NewGuid().ToByteArray())
             };
-            var expected = WebEncoders.Base64UrlEncode(Convert.FromBase64String(serviceItem.serviceID));
+            var expected = WebUtility.UrlEncode(serviceItem.serviceID);
             Assert.Equal(expected, serviceItem.ServiceIdUrlSafe);
         }
 

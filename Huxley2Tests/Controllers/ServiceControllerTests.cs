@@ -37,7 +37,7 @@ namespace Huxley2Tests.Controllers
         {
             await controller.Get(request, new ServiceRequest());
 
-            A.CallTo(() => service.GetServiceDetailsAsync(request)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => service.GetServiceDetailsAsyncWithoutBase64Encoding(request)).MustHaveHappenedOnceExactly();
         }
 
         [Fact]
@@ -50,14 +50,14 @@ namespace Huxley2Tests.Controllers
 
             await controller.Get(request, queryRequest);
 
-            A.CallTo(() => service.GetServiceDetailsAsync(queryRequest)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => service.GetServiceDetailsAsyncWithoutBase64Encoding(queryRequest)).MustHaveHappenedOnceExactly();
         }
 
         [Fact]
         public async Task ServiceControllerGetReturnsResponseFromService()
         {
             var response = new BaseServiceDetails();
-            A.CallTo(() => service.GetServiceDetailsAsync(request)).Returns(response);
+            A.CallTo(() => service.GetServiceDetailsAsyncWithoutBase64Encoding(request)).Returns(response);
 
             var result = await controller.Get(request, request);
 
@@ -79,7 +79,7 @@ namespace Huxley2Tests.Controllers
         public async Task ServiceControllerSetsETag()
         {
             var response = new BaseServiceDetails();
-            A.CallTo(() => service.GetServiceDetailsAsync(request)).Returns(response);
+            A.CallTo(() => service.GetServiceDetailsAsyncWithoutBase64Encoding(request)).Returns(response);
             A.CallTo(() => service.GenerateChecksum(response)).Returns(etag);
 
             await controller.Get(request, request);
