@@ -20,14 +20,10 @@ namespace OpenLDBWS
 
         public Guid ServiceIdGuid => ToGuid(serviceIDField);
 
-        // note that while ServiceID is already URL-safe, the underscore char
-        // is not valid base64, so any inputs that previously assumed b64 input
-        // may break. As such, we will encode the string to be b64-safe as well
-        // as URL-safe
+        // the Base64 encoding seems to break the recognisable serviceID on the NRE server
+        // so just send it as is
         [SuppressMessage("Design", "CA1056:Uri properties should not be strings", Justification = "Not a URL")]
-        public string ServiceIdUrlSafe => WebEncoders.Base64UrlEncode(
-            System.Text.Encoding.UTF8.GetBytes(serviceIDField)
-        );
+        public string ServiceIdUrlSafe => serviceID;
 
         public static Guid ToGuid(string serviceID)
         {
