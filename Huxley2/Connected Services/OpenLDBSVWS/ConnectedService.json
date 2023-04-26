@@ -3,7 +3,8 @@
   "Version": "15.0.40203.910",
   "ExtendedData": {
     "inputs": [
-      "https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/wsdl.aspx?ver=2017-10-01"
+        "https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/wsdl.aspx?ver=2017-10-01",
+        "https://ojp.nationalrail.co.uk/webservices/jpservices.wsdl"
     ],
     "collectionTypes": [
       "System.Array",

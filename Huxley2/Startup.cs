@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using System.ServiceModel.Description;
 using Huxley2.Interfaces;
 using Huxley2.Services;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenLDBSVWS;
+using SysSvcmod = System.ServiceModel.Description;
 
 namespace Huxley2
 {
@@ -48,6 +50,11 @@ namespace Huxley2
                 new LDBSVServiceSoapClient(LDBSVServiceSoapClient.EndpointConfiguration.LDBSVServiceSoap));
             services.AddSingleton<LDBSVRefServiceSoap, LDBSVRefServiceSoapClient>(_ =>
                 new LDBSVRefServiceSoapClient(LDBSVRefServiceSoapClient.EndpointConfiguration.LDBSVRefServiceSoap));
+
+            services.AddSingleton<JPServices.jpservices, JPServices.jpservicesClient>(_ =>
+                makeClient());
+            
+
             services.AddSingleton<IAccessTokenService, AccessTokenService>();
             services.AddSingleton<ICrsService, CrsService>();
             services.AddSingleton<IStationService, CrsStationService>();
@@ -58,11 +65,30 @@ namespace Huxley2
             services.AddSingleton<IDelaysService, DelaysService>();
             services.AddSingleton<IServiceDetailsService, ServiceDetailsService>();
             services.AddSingleton<IUpdateCheckService, UpdateCheckService>();
+            services.AddSingleton<IJourneyPlannerService, JourneyPlannerService>();
             // Singleton HTTP client is best practice and is fine as we don't use authentication or cookies
             // No interface is available but we can mock it by passing in a fake handler to the constructor
             services.AddSingleton<HttpClient>();
         }
 
+
+        private static JPServices.jpservicesClient makeClient() {
+            JPServices.jpservicesClient client = new JPServices.jpservicesClient(
+                JPServices.jpservicesClient.EndpointConfiguration.NreOJPPort);
+
+
+          //  client.ClientCredentials.UserName.UserName = "intsoftdev";
+          //  client.ClientCredentials.UserName.Password = "lAevSEww";
+
+            /* SysSvcmod.ClientCredentials clientCredentials = new SysSvcmod.ClientCredentials();
+             clientCredentials.UserName.UserName = "intsoftdev";
+             clientCredentials.UserName.Password = "lAevSEww";
+
+             client.ChannelFactory.Endpoint.EndpointBehaviors.RemoveAt(0);
+             client.ChannelFactory.Endpoint.EndpointBehaviors.Add(clientCredentials);*/
+            return client;
+        }
+        
         public async void Configure(
             IApplicationBuilder app,
             IWebHostEnvironment env,

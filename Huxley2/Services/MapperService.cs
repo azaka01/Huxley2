@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Huxley2.Interfaces;
 using Huxley2.Models;
+using JPServices;
 using Microsoft.Extensions.Logging;
 using OpenLDBSVWS;
 using OpenLDBWS;
@@ -32,6 +33,23 @@ namespace Huxley2.Services
             _accessTokenService = accessTokenService;
             _crsService = crsService;
             _dateTimeService = dateTimeService;
+        }
+
+        private RealtimeJourneyPlanRequest makeJPRequest(JourneyPlannerRequest request) {
+            var dateTest = new DateTime(2023, 4, 26, 0, 0, 0);
+
+            return new JPServices.RealtimeJourneyPlanRequest {
+                origin = makeJPCrsCode("HOU"),
+                destination = makeJPCrsCode("GAT"),
+                realtimeEnquiry = RealtimeEnquiryType.STANDARD,
+                outwardTime = makeJPArrivalTime(dateTest)
+            };
+        }
+
+        public JPServices.RealtimeJourneyPlanRequest1 MapGetJourneyPlannerRequest(JourneyPlannerRequest request) {
+            return new JPServices.RealtimeJourneyPlanRequest1 {
+                RealtimeJourneyPlanRequest = makeJPRequest(request)
+            };
         }
 
         public OpenLDBWS.GetArrBoardWithDetailsRequest MapGetArrBoardWithDetailsRequest(StationBoardRequest request)
@@ -305,6 +323,22 @@ namespace Huxley2.Services
                 time = _dateTimeService.LocalNow.AddMinutes(request.TimeOffset), // local - not UTC
                 timeWindow = (ushort)request.TimeWindow, // max 1440mins (24hrs)
                 services = STAFF_SERVICES_CODES,
+            };
+        }
+
+        private JPServices.CrsCode makeJPCrsCode(string crsCode) {
+            return new JPServices.CrsCode {
+                Item = crsCode,
+                ItemElementName = ItemChoiceType.stationCRS
+            };
+        }
+
+        private JPServices.RealtimeJourneyPlanRequestOutwardTime makeJPArrivalTime(DateTime arrivalTime) {
+           
+            return new JPServices.RealtimeJourneyPlanRequestOutwardTime {
+                Item = arrivalTime,
+                // TODO can also have departBy
+                ItemElementName = ItemChoiceType1.arriveBy
             };
         }
 
