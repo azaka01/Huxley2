@@ -1,12 +1,15 @@
-﻿// © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
+// © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
 
 using Huxley2.Models;
 using OpenLDBWS;
+using ServiceReference;
 
 namespace Huxley2.Interfaces
 {
     public interface IMapperService
     {
+        RealtimeJourneyPlanRequest1 MapGetJourneyPlannerRequest();
+
         GetDepartureBoardRequest MapGetDepartureBoardRequest(StationBoardRequest request);
         GetDepBoardWithDetailsRequest MapGetDepBoardWithDetailsRequest(StationBoardRequest request);
         GetArrivalBoardRequest MapGetArrivalBoardRequest(StationBoardRequest request);

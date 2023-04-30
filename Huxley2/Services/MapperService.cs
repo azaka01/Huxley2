@@ -1,4 +1,4 @@
-﻿// © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
+// © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
 
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using Huxley2.Models;
 using Microsoft.Extensions.Logging;
 using OpenLDBSVWS;
 using OpenLDBWS;
+using ServiceReference;
 
 namespace Huxley2.Services
 {
@@ -32,6 +33,46 @@ namespace Huxley2.Services
             _accessTokenService = accessTokenService;
             _crsService = crsService;
             _dateTimeService = dateTimeService;
+        }
+
+        private CrsCode makeJPCrsCode(string crsCode)
+        {
+            return new CrsCode
+            {
+                Item = crsCode,
+                ItemElementName = ItemChoiceType.stationCRS
+            };
+        }
+
+        private RealtimeJourneyPlanRequestOutwardTime makeJPArrivalTime(DateTime arrivalTime)
+        {
+            return new RealtimeJourneyPlanRequestOutwardTime
+            {
+                Item = arrivalTime,
+                // TODO can also have departBy
+                ItemElementName = ItemChoiceType1.arriveBy
+            };
+        }
+
+        private RealtimeJourneyPlanRequest makeJPRequest()
+        {
+            var dateTest = new DateTime(2023, 5, 02, 0, 0, 0);
+
+            return new RealtimeJourneyPlanRequest
+            {
+                origin = makeJPCrsCode("HOU"),
+                destination = makeJPCrsCode("WAT"),
+                realtimeEnquiry = RealtimeEnquiryType.STANDARD,
+                outwardTime = makeJPArrivalTime(dateTest)
+            };
+        }
+
+        public RealtimeJourneyPlanRequest1 MapGetJourneyPlannerRequest()
+        {
+            return new RealtimeJourneyPlanRequest1
+            {
+                RealtimeJourneyPlanRequest = makeJPRequest()
+            };
         }
 
         public OpenLDBWS.GetArrBoardWithDetailsRequest MapGetArrBoardWithDetailsRequest(StationBoardRequest request)

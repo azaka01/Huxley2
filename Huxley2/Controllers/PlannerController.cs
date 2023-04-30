@@ -1,30 +1,1 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
-namespace Huxley2.Controllers
-{
-    [Route("api/[controller]")]
-    [ApiController]
-    public class PlannerController : ControllerBase
-    {
-        private readonly ILogger<PlannerController> _logger;
-
-
-        public PlannerController(
-            ILogger<PlannerController> logger)
-        {
-            _logger = logger;
-        }
-
-
-        // GET api/<PlannerController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            _logger.LogInformation($"Getting planner for query: {id}");
-            return "value " + id;
-        }
-    }
-}
+using Microsoft.AspNetCore.Mvc;using Microsoft.Extensions.Logging;using System.Diagnostics;using System;using Huxley2.Interfaces;using System.Threading.Tasks;// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860namespace Huxley2.Controllers{    [Route("api/[controller]")]    [ApiController]    public class PlannerController : ControllerBase    {        private readonly ILogger<PlannerController> _logger;        private readonly IJourneyPlannerService _journeyPlannerService;        public PlannerController(            ILogger<PlannerController> logger,            IJourneyPlannerService journeyPlannerService)        {            _logger = logger;            _journeyPlannerService = journeyPlannerService;        }        // GET api/<PlannerController>/5        [HttpGet("{id}")]        public async Task<object> GetAsync(int id)        {            _logger.LogInformation($"Getting planner for query: {id}");            try            {                var clock = Stopwatch.StartNew();                var journeyDetails = await _journeyPlannerService.GetJourneyDetailsAsync();             //   _logger.LogInformation("OJP API response is ", journeyDetails.response.ToString());                clock.Stop();                _logger.LogInformation("OJP API time {ElapsedMilliseconds:#,#}ms",                    clock.ElapsedMilliseconds);                return journeyDetails;            }            catch (Exception e)            {                _logger.LogError(e, "JourneyPlanner request call failed");                throw;            }        }    }}

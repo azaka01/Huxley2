@@ -1,4 +1,4 @@
-﻿// © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
+// © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
 
 using System;
 using System.Net.Http;
@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenLDBSVWS;
+using ServiceReference;
 
 namespace Huxley2
 {
@@ -48,6 +49,9 @@ namespace Huxley2
                 new LDBSVServiceSoapClient(LDBSVServiceSoapClient.EndpointConfiguration.LDBSVServiceSoap));
             services.AddSingleton<LDBSVRefServiceSoap, LDBSVRefServiceSoapClient>(_ =>
                 new LDBSVRefServiceSoapClient(LDBSVRefServiceSoapClient.EndpointConfiguration.LDBSVRefServiceSoap));
+            services.AddSingleton<jpservices, jpservicesClient>(_ =>
+               makeClient());
+
             services.AddSingleton<IAccessTokenService, AccessTokenService>();
             services.AddSingleton<ICrsService, CrsService>();
             services.AddSingleton<IStationService, CrsStationService>();
@@ -58,9 +62,17 @@ namespace Huxley2
             services.AddSingleton<IDelaysService, DelaysService>();
             services.AddSingleton<IServiceDetailsService, ServiceDetailsService>();
             services.AddSingleton<IUpdateCheckService, UpdateCheckService>();
+            services.AddSingleton<IJourneyPlannerService, JourneyPlannerService>();
             // Singleton HTTP client is best practice and is fine as we don't use authentication or cookies
             // No interface is available but we can mock it by passing in a fake handler to the constructor
             services.AddSingleton<HttpClient>();
+        }
+
+        private static jpservicesClient makeClient()
+        {
+            TimeSpan timeout = new TimeSpan(0, 0, 10);
+            jpservicesClient client = new jpservicesClient("https://ojp.nationalrail.co.uk/webservices", timeout, "intsoftdev", "lAevSEww");
+            return client;
         }
 
         public async void Configure(
