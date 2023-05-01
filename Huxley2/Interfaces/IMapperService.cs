@@ -2,13 +2,13 @@
 
 using Huxley2.Models;
 using OpenLDBWS;
-using ServiceReference;
+using NreOJPService;
 
 namespace Huxley2.Interfaces
 {
     public interface IMapperService
     {
-        RealtimeJourneyPlanRequest1 MapGetJourneyPlannerRequest();
+        RealtimeJourneyPlanRequest1 MapGetJourneyPlannerRequest(JourneyPlannerRequest request);
 
         GetDepartureBoardRequest MapGetDepartureBoardRequest(StationBoardRequest request);
         GetDepBoardWithDetailsRequest MapGetDepBoardWithDetailsRequest(StationBoardRequest request);

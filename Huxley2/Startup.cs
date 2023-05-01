@@ -11,28 +11,32 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenLDBSVWS;
-using ServiceReference;
+using NreOJPService;
+using System.Configuration;
 
-namespace Huxley2
-{
-    public class Startup
-    {
+namespace Huxley2 {
+    public class Startup {
         private readonly bool _enableUpdateCheck;
 
+        private static string endPoint = "";
+        private static string userName = "";
+        private static string password = "";
         // Unlike WebHost in ASP.NET Core 2, generic Host doesn't support ILogger<T> Startup constructor injection
         // It only supports IHostEnvironment, IWebHostEnvironment, and IConfiguration
         // ILogger<T> can be passed to the Configure method instead
-        public Startup(IConfiguration config)
-        {
+        public Startup(IConfiguration config) {
             _enableUpdateCheck = config.GetValue<bool>("EnableUpdateCheck");
+            // these values are configured in secrets.json for local development and AppSettings.json in Azure
+            endPoint = config.GetValue<string>("ojpEndpoint");
+            userName = config.GetValue<string>("ojpUsername");
+            password = config.GetValue<string>("ojpPassword");
         }
 
-        public static void ConfigureServices(IServiceCollection services)
-        {
+        public static void ConfigureServices(IServiceCollection services) {
+
             // Shouldn't be a security issue as plaintext isn't chosen by the user and we aren't using auth or sessions
             // https://docs.microsoft.com/en-us/aspnet/core/performance/response-compression?view=aspnetcore-6.0#compression-with-secure-protocol
-            services.AddResponseCompression(options =>
-            {
+            services.AddResponseCompression(options => {
                 options.EnableForHttps = true;
             });
             // AddResponseCaching doesn't appear to add any more services but best to be explicit for the future
@@ -68,10 +72,9 @@ namespace Huxley2
             services.AddSingleton<HttpClient>();
         }
 
-        private static jpservicesClient makeClient()
-        {
+        private static jpservicesClient makeClient() {
             TimeSpan timeout = new TimeSpan(0, 0, 10);
-            jpservicesClient client = new jpservicesClient("https://ojp.nationalrail.co.uk/webservices", timeout, "intsoftdev", "lAevSEww");
+            jpservicesClient client = new jpservicesClient(endPoint, timeout, userName, password);
             return client;
         }
 
@@ -81,13 +84,13 @@ namespace Huxley2
             ILogger<Startup> logger,
             ICrsService crsService,
             IStationService stationService,
-            IUpdateCheckService updateCheckService)
-        {
+            IUpdateCheckService updateCheckService) {
             logger.LogInformation("Configuring Huxley 2 web API application");
 
+            logger.LogInformation("endPoint " + endPoint + "userName " + userName);
+
             app.UseResponseCompression();
-            if (env.IsDevelopment())
-            {
+            if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             }
             app.UseHttpsRedirection();
@@ -104,30 +107,25 @@ namespace Huxley2
             // https://docs.microsoft.com/en-us/aspnet/core/security/cors
             app.UseCors(config => config.AllowAnyOrigin());
 
-            app.UseEndpoints(endpoints =>
-            {
+            app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
             });
 
             logger.LogInformation("Huxley 2 web API application configured");
 
-            try
-            {
+            try {
                 logger.LogInformation("Loading CRS station codes from remote source");
                 await crsService.LoadCrsCodes();
                 await stationService.LoadStations();
-                if (_enableUpdateCheck)
-                {
+                if (_enableUpdateCheck) {
                     logger.LogInformation("Checking for any available updates to Huxley");
                     await updateCheckService.CheckForUpdates();
                 }
-            }
-            catch (Exception e) when (
-                e is CrsServiceException ||
-                e is UpdateCheckServiceException
-                )
-            {
+            } catch (Exception e) when (
+                  e is CrsServiceException ||
+                  e is UpdateCheckServiceException
+                  ) {
                 logger.LogError(e, "Non-fatal startup failure");
             }
 
