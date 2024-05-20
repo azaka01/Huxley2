@@ -1,5 +1,17 @@
 [
     {
+        "Latitude": 51.426667,
+        "StationName": "Reading Green Park",
+        "CrsCode": "RGP",
+        "Longitude": -1.001389
+    },
+    {
+        "Latitude": 51.5687,
+        "StationName": "Brent Cross West",
+        "CrsCode": "BCZ",
+        "Longitude": -0.2269
+    },
+    {
         "Latitude": 51.514,
         "StationName": "Bond Street",
         "CrsCode": "BDS",

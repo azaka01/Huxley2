@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web" DefaultTargets="Publish">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
@@ -14,7 +14,6 @@
 
     <ItemGroup>
       <None Remove="IeuanWalker.GeoUK" />
-      <None Remove="Secrets\" />
     </ItemGroup>
     <ItemGroup>
         <None Include="..\.editorconfig" Link=".editorconfig" />
