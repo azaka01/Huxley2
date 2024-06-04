@@ -1,5 +1,11 @@
 [
     {
+        "Latitude": 51.471,
+        "StationName": "Heathrow Terminals 2 & 3",
+        "CrsCode": "HXX",
+        "Longitude": -0.454
+    },
+    {
         "Latitude": 51.426667,
         "StationName": "Reading Green Park",
         "CrsCode": "RGP",
