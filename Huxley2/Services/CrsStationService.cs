@@ -75,6 +75,26 @@ namespace Huxley2.Services
             }
         }
 
+        public CrsStation? GetStationByCrsCode(string? query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return null;
+            }
+
+            var allStations =  _stations.Where(c => c.CrsCode == query)
+                .Select(c => new CrsStation { CrsCode = c.CrsCode, StationName = c.StationName, Latitude = c.Latitude, Longitude = c.Longitude })
+                .OrderBy(c => c.StationName);
+
+            if (!allStations.Any())
+            {
+                // here we should log the query so the CRS code can be added later
+                _logger.Log(LogLevel.Error,"unable to locate CRS " + query);
+            }
+
+            return allStations.FirstOrDefault();
+        }
+
         public IEnumerable<CrsStation> GetStations(string? query) {
             if (string.IsNullOrWhiteSpace(query)) {
                 return _stations.Select(c => new CrsStation { CrsCode = c.CrsCode, StationName = c.StationName, Latitude = c.Latitude, Longitude = c.Longitude })
@@ -135,7 +155,8 @@ namespace Huxley2.Services
             };
         }
 
-        private LatitudeLongitude GetLatLon(double easting, double northing) {
+        private LatitudeLongitude GetLatLon(double easting, double northing)
+        {
             // 1.Convert to Cartesian
             Cartesian cartesian = Convert.ToCartesian(new Airy1830(),
                 new BritishNationalGrid(),

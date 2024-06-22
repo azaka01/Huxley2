@@ -4,10 +4,19 @@ using Microsoft.AspNetCore.Mvc;using Microsoft.Extensions.Logging;using System
 
 namespace Huxley2.Controllers {    [Route("api/[controller]")]    [ApiController]    public class PlannerController : ControllerBase {        private readonly ILogger<PlannerController> _logger;        private readonly IJourneyPlannerService _journeyPlannerService;        public PlannerController(            ILogger<PlannerController> logger,            IJourneyPlannerService journeyPlannerService) {            _logger = logger;            _journeyPlannerService = journeyPlannerService;        }
 
-
         // GET api/planner/HOU/WAT/2023-06-30T22:00:00.000Z?arriveBy=false
-        [HttpGet]        [Route("{originCrs}/{destinationCrs}/{plannedTime}")]        [ProducesResponseType(typeof(ReturnResponseType), StatusCodes.Status200OK)]        [ProducesResponseType(typeof(RealtimeJourneyPlanResponse), StatusCodes.Status200OK)]        [ProducesDefaultResponseType]        public async Task<RealtimeJourneyPlanResponse> Get([FromRoute] JourneyPlannerRequest request) {            _logger.LogInformation($"Getting planner for query: {request.OriginCrs}");            try {                var clock = Stopwatch.StartNew();                var journeyDetails = await _journeyPlannerService.GetJourneyDetailsAsync(request);
-                //   _logger.LogInformation("OJP API response is ", journeyDetails.response.ToString());
+        [HttpGet]        [Route("{originCrs}/{destinationCrs}/{plannedTime}")]        [ProducesResponseType(typeof(ReturnResponseType), StatusCodes.Status200OK)]        [ProducesResponseType(typeof(OjpResponse), StatusCodes.Status200OK)]        [ProducesDefaultResponseType]        public async Task<OjpResponse> Get([FromRoute] JourneyPlannerRequest request)
+        {            _logger.LogInformation($"Getting planner for query: {request.OriginCrs}");            try
+            {                var clock = Stopwatch.StartNew();                var ojpResponse = await _journeyPlannerService.GetJourneyDetailsAsync(request);
+                _logger.LogInformation("OJP API response is ", ojpResponse.GeneratedAt);
                 clock.Stop();                _logger.LogInformation("OJP API time {ElapsedMilliseconds:#,#}ms",                    clock.ElapsedMilliseconds);
                 // TODO if journeyDetails null then throw execption
-                return journeyDetails;            } catch (Exception e) {                _logger.LogError(e, "JourneyPlanner request call failed");                throw;            }        }    }}
+                if (ojpResponse == null)
+                {
+                    _logger.LogError("null journeyDetails returned");
+                    throw new InvalidOperationException("Journey details cannot be null");
+                }
+                return ojpResponse;            }
+            catch (Exception e)
+            {                _logger.LogError(e, "JourneyPlanner request call failed");
+                // TODO log request                throw;            }        }    }}
