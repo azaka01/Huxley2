@@ -20,9 +20,9 @@ namespace Huxley2.Models
 
         public string? DestinationPlatform { get; set; } = string.Empty;
 
-        public RealtimeClassification? RealTimeClassification { get; set; }
+        public string? RealTimeClassification { get; set; }
 
-        public TravelModeEnum? Mode { get; set; }
+        public string? TravelMode { get; set; }
 
         public OperatorDetails? OperatorDetails { get; set; }
 

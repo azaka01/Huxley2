@@ -19,4 +19,22 @@ namespace Huxley2.Controllers {    [Route("api/[controller]")]    [ApiControll
                 return ojpResponse;            }
             catch (Exception e)
             {                _logger.LogError(e, "JourneyPlanner request call failed");
-                // TODO log request                throw;            }        }    }}
+                // TODO log request                throw;            }        }
+
+        // GET api/planner/ABW/PAD/2024-06-23T17:02:00.000/2024-06-23T17:31:00.000
+        [HttpGet]        [Route("{originCrs}/{destinationCrs}/{departureTime}/{arrivalTime}")]        [ProducesResponseType(typeof(ReturnResponseType), StatusCodes.Status200OK)]        [ProducesResponseType(typeof(OjpResponse), StatusCodes.Status200OK)]        [ProducesDefaultResponseType]        public async Task<OjpCallingPointsResponse> Get([FromRoute] JourneyCallingPointsRequest request)
+        {            _logger.LogInformation($"Getting planner for query: {request.OriginCrs}");            try
+            {                var clock = Stopwatch.StartNew();                var ojpResponse = await _journeyPlannerService.GetJourneyCallingPointsAsync(request);
+                _logger.LogInformation("OJP API response is ", ojpResponse.GeneratedAt);
+                clock.Stop();                _logger.LogInformation("OJP API time {ElapsedMilliseconds:#,#}ms",                    clock.ElapsedMilliseconds);
+                // TODO if journeyDetails null then throw execption
+                if (ojpResponse == null)
+                {
+                    _logger.LogError("null journeyDetails returned");
+                    throw new InvalidOperationException("Journey details cannot be null");
+                }
+                return ojpResponse;            }
+            catch (Exception e)
+            {                _logger.LogError(e, "JourneyPlanner request call failed");
+                // TODO log request
+                throw;            }        }    }}

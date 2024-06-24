@@ -67,6 +67,25 @@ namespace Huxley2.Services {
             };
         }
 
+        private static RealtimeCallingPointsRequest makeCallingPointsRequest(JourneyCallingPointsRequest request)
+        {
+            return new RealtimeCallingPointsRequest
+            {
+                origin = request.OriginCrs,
+                destination = request.DestinationCrs,
+                departure = request.DepartureTime,
+                arrival = request.ArrivalTime
+            };
+        }
+
+        public RealtimeCallingPointsRequest1 MapGetCallingPointsRequest(JourneyCallingPointsRequest request)
+        {
+            return new RealtimeCallingPointsRequest1
+            {
+                RealtimeCallingPointsRequest = makeCallingPointsRequest(request)
+            };
+        }
+
         public OpenLDBWS.GetArrBoardWithDetailsRequest MapGetArrBoardWithDetailsRequest(StationBoardRequest request) {
             return new OpenLDBWS.GetArrBoardWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),

@@ -10,6 +10,8 @@ namespace Huxley2.Interfaces
     {
         RealtimeJourneyPlanRequest1 MapGetJourneyPlannerRequest(JourneyPlannerRequest request);
 
+        RealtimeCallingPointsRequest1 MapGetCallingPointsRequest(JourneyCallingPointsRequest request);
+
         GetDepartureBoardRequest MapGetDepartureBoardRequest(StationBoardRequest request);
         GetDepBoardWithDetailsRequest MapGetDepBoardWithDetailsRequest(StationBoardRequest request);
         GetArrivalBoardRequest MapGetArrivalBoardRequest(StationBoardRequest request);
