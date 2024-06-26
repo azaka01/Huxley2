@@ -56,9 +56,21 @@ namespace Huxley2.Services {
             return new RealtimeJourneyPlanRequest {
                 origin = makeJPCrsCode(request.OriginCrs),
                 destination = makeJPCrsCode(request.DestinationCrs),
-                realtimeEnquiry = RealtimeEnquiryType.STANDARD,
+                realtimeEnquiry = GetRealtimeEnquiryType(request),
                 outwardTime = makeJPArrivalTime(request)
             };
+        }
+
+        private static RealtimeEnquiryType GetRealtimeEnquiryType(JourneyPlannerRequest request)
+        {
+            if (request.EnquiryType == 0)
+            {
+                return RealtimeEnquiryType.STANDARD;
+
+            } else
+            {
+                return RealtimeEnquiryType.CHECK_ALTERNATIVES;
+            }
         }
 
         public RealtimeJourneyPlanRequest1 MapGetJourneyPlannerRequest(JourneyPlannerRequest request) {

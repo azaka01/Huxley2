@@ -1,4 +1,4 @@
-using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPService;using System.Threading.Tasks;using Huxley2.Models;using System.Collections.Generic;namespace Huxley2.Services{    public class JourneyPlannerService : IJourneyPlannerService    {        private readonly ILogger<JourneyPlannerService> _logger;        private readonly IMapperService _mapperService;        private readonly IStationService _stationService;        private readonly jpservices _jpClient;        public JourneyPlannerService(            ILogger<JourneyPlannerService> logger,            IStationService stationService,            IMapperService mapperService,            jpservices jpClient        )        {            _logger = logger;            _stationService = stationService;            _mapperService = mapperService;            _jpClient = jpClient;        }
+using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPService;using System.Threading.Tasks;using Huxley2.Models;using System.Collections.Generic;using System;namespace Huxley2.Services{    public class JourneyPlannerService : IJourneyPlannerService    {        private readonly ILogger<JourneyPlannerService> _logger;        private readonly IMapperService _mapperService;        private readonly IStationService _stationService;        private readonly jpservices _jpClient;        public JourneyPlannerService(            ILogger<JourneyPlannerService> logger,            IStationService stationService,            IMapperService mapperService,            jpservices jpClient        )        {            _logger = logger;            _stationService = stationService;            _mapperService = mapperService;            _jpClient = jpClient;        }
 
         async Task<OjpCallingPointsResponse> IJourneyPlannerService.GetJourneyCallingPointsAsync(JourneyCallingPointsRequest request)
         {
@@ -16,21 +16,6 @@ using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPServic
 
                     foreach (var singleLeg in leg.realtimeCallingPoint)
                     {
-
-                        var y = singleLeg.timetable.scheduledTimes.arrival;
-                        var z = singleLeg.timetable.scheduledTimes.departure;
-                        var a = singleLeg.board;
-                        var aa = singleLeg.boardSpecified;
-                        var b = singleLeg.alight;
-                        var bb = singleLeg.alightSpecified;
-                        var c = singleLeg.platform;
-                        // these could be null
-                        /* var d = singleLeg.realtime.updatedTimes.arrival;
-                         var e = singleLeg.realtime.updatedTimes.departure;
-                         var f = singleLeg.realtime.cancellationReason;
-                         var g = singleLeg.realtime.lateRunningReason;
-                         var h = singleLeg.realtime.cancelled;*/
-
                         singlePointLegs.Add(new OjpSingleCallingPointLeg()
                         {
                             Station = _stationService.GetStationByCrsCode(singleLeg.station),
@@ -38,8 +23,8 @@ using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPServic
                             ArrivalTime = singleLeg.timetable.scheduledTimes.arrival,
                             DepartureTime = singleLeg.timetable.scheduledTimes.departure,
                             Board = singleLeg.board,
-                            Alight = singleLeg.alight
-                            // TODO add updated, cancel, late running
+                            Alight = singleLeg.alight,
+                            StationDelayOrCancelData = GetDelayOrCancelData(singleLeg)
                         });
                     };
 
@@ -50,7 +35,7 @@ using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPServic
                         DestinationStation = _stationService.GetStationByCrsCode(leg.destination),
                         ArrivalTime = leg.arrival,
                         DepartureTime = leg.departure,
-                        SearchStatus = leg.searchStatus,
+                        SearchStatus = leg.searchStatus.ToString(),
                         OjpSingleCpLegs = singlePointLegs
                     });
                 }
@@ -69,6 +54,43 @@ using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPServic
                     // TODO include status field that no repsonse was received
                 };
             }
+        }
+
+        private static OjpCallingPointDelayOrCancelData? GetDelayOrCancelData(RealtimeCallingPointsResponseLegRealtimeCallingPoint response)
+        {
+            if (response.realtime == null) return null;
+
+            var updatedArrivalTime = GetArrivalTimeFromResponse(response.realtime.updatedTimes);
+            var updatedDepartureTime = GetDepartureTimeFromResponse(response.realtime.updatedTimes);
+
+            return new OjpCallingPointDelayOrCancelData
+            {
+                UpdatedArrivalTime = updatedArrivalTime,
+                UpdatedDepartureTime = updatedDepartureTime,
+                IsCancelled = response.realtime.cancelled,
+                CancellationReason = response.realtime.cancellationReason,
+                DelayedReason = response.realtime.lateRunningReason
+            };
+        }
+
+        private static DateTime? GetArrivalTimeFromResponse(RealtimeCallingPointsResponseLegRealtimeCallingPointRealtimeUpdatedTimes response)
+        {
+            if (response == null || response.arrival == null)
+            {
+                return null;
+            }
+
+            return response.arrival.time;
+        }
+
+        private static DateTime? GetDepartureTimeFromResponse(RealtimeCallingPointsResponseLegRealtimeCallingPointRealtimeUpdatedTimes response)
+        {
+            if (response == null || response.departure == null)
+            {
+                return null;
+            }
+
+            return response.departure.time;
         }
 
         async Task<OjpResponse> IJourneyPlannerService.GetJourneyDetailsAsync(JourneyPlannerRequest request)
@@ -110,7 +132,7 @@ using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPServic
                         Id = rtOutwardJourney.id,
                         OriginStation = originStation,
                         DestinationStation = destinationStation,
-                        RealTimeClassification = rtOutwardJourney.realtimeClassification,
+                        RealTimeClassification = rtOutwardJourney.realtimeClassification.ToString(),
                         JourneyTimetable = rtOutwardJourney.timetable,
                         OjpLegs = ojpOutwardLegs,
                         Fare = rtOutwardJourney.fare,
@@ -148,7 +170,7 @@ using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPServic
                         Id = rtInwardJourney.id,
                         OriginStation = originStation,
                         DestinationStation = destinationStation,
-                        RealTimeClassification = rtInwardJourney.realtimeClassification,
+                        RealTimeClassification = rtInwardJourney.realtimeClassification.ToString(),
                         JourneyTimetable = rtInwardJourney.timetable,
                         OjpLegs = ojpInwardLegs,
                         Fare = rtInwardJourney.fare,

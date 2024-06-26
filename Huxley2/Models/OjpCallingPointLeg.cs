@@ -15,7 +15,7 @@ namespace Huxley2.Models
 
         public DateTime DepartureTime { get; set; }
 
-        public CallingPointsSearchStatus SearchStatus { get; set; }
+        public string SearchStatus { get; set; }
 
         public IEnumerable<OjpSingleCallingPointLeg> OjpSingleCpLegs { get; set; } = new List<OjpSingleCallingPointLeg>();
 

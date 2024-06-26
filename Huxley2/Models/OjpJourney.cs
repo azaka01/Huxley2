@@ -11,7 +11,7 @@ namespace Huxley2.Models
 
         public CrsStation? DestinationStation { get; set; }
 
-        public RealtimeClassification? RealTimeClassification { get; set; }
+        public string? RealTimeClassification { get; set; }
 
         public JourneyTimetable? JourneyTimetable { get; set; }
 

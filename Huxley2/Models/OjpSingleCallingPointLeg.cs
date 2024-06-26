@@ -19,5 +19,7 @@ namespace Huxley2.Models
         public DateTime? ArrivalTime { get; set; }
 
         public DateTime? DepartureTime { get; set; }
+
+        public OjpCallingPointDelayOrCancelData? StationDelayOrCancelData { get; set; }
     }
 }
