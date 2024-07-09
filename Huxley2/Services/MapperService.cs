@@ -57,8 +57,45 @@ namespace Huxley2.Services {
                 origin = makeJPCrsCode(request.OriginCrs),
                 destination = makeJPCrsCode(request.DestinationCrs),
                 realtimeEnquiry = GetRealtimeEnquiryType(request),
-                outwardTime = makeJPArrivalTime(request)
+                outwardTime = makeJPArrivalTime(request),
+                ItemsElementName = GetItems(request),
+                Items = GetItemCrsCodes(request),
+                directTrains = GetDirectTrainsStatus(request)
             };
+        }
+
+        private static bool GetDirectTrainsStatus(JourneyPlannerRequest request)
+        {
+            if (request.DirectTrains == false) return false;
+
+            return true;
+        }
+
+        private static CrsCode[] GetItemCrsCodes(JourneyPlannerRequest request)
+        {
+            if (request.AvoidCrs != null)
+            {
+                return new CrsCode[] { makeJPCrsCode(request.AvoidCrs) };
+            }
+            else if (request.ViaCrs != null)
+            {
+                return new CrsCode[] { makeJPCrsCode(request.ViaCrs) };
+            }
+            return Array.Empty<CrsCode>();
+        }
+
+
+        private static ItemsChoiceType[] GetItems(JourneyPlannerRequest request)
+        {
+            if (request.AvoidCrs != null)
+            {
+                return new ItemsChoiceType[] { ItemsChoiceType.notVia };
+            }
+            else if (request.ViaCrs != null)
+            {
+                return new ItemsChoiceType[] { ItemsChoiceType.via };
+            }
+            return Array.Empty<ItemsChoiceType>();
         }
 
         private static RealtimeEnquiryType GetRealtimeEnquiryType(JourneyPlannerRequest request)

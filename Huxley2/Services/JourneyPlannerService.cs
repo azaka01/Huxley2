@@ -100,9 +100,11 @@ using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPServic
             // TODO RealtimeJourneyPlanFault not sure how to handle
             // RealtimeJourneyPlanResponse will be null if SOAP API error
 
+            // directTrains = true throws RealtimeJourneyPlanFault if not valid
+
             var outwardJourneys = new List<OjpJourney>();
 
-            if (rtResponse.outwardJourney != null)
+            if (rtResponse != null && rtResponse.outwardJourney != null)
             {
                 foreach (var rtOutwardJourney in rtResponse.outwardJourney)
                 {
@@ -125,7 +127,7 @@ using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPServic
                             OperatorDetails = leg.@operator,
                             JourneyTimetable = leg.timetable,
                             UndergroundTravelInformation = leg.undergroundTravelInformation
-                        }); ;
+                        }); 
                     }
                     outwardJourneys.Add(new OjpJourney
                     {
@@ -142,7 +144,7 @@ using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPServic
             }
 
             var inwardJourneys = new List<OjpJourney>();
-            if (rtResponse.inwardJourney != null)
+            if (rtResponse != null && rtResponse.inwardJourney != null)
             {
                 foreach (var rtInwardJourney in rtResponse.inwardJourney)
                 {
