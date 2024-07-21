@@ -184,6 +184,10 @@ using Huxley2.Interfaces;using Microsoft.Extensions.Logging;using NreOJPServic
             return new OjpResponse
             {
                 GeneratedAt = rtResponse.generatedTime,
+                PlannedTime = request.PlannedTime,
+                ItemChoiceType = request.ItemChoiceType,
+                OriginStation = _stationService.GetStationByCrsCode(request.OriginCrs),
+                DestinationStation = _stationService.GetStationByCrsCode(request.DestinationCrs),
                 OutwardJourneys = outwardJourneys,
                 InwardJourneys = inwardJourneys,
                 NrsStatus = rtResponse.nrsStatus,

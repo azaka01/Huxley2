@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using MessagePack;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Huxley2.Models {
@@ -23,7 +22,7 @@ namespace Huxley2.Models {
         }
      
         [FromQuery]
-        public bool ArriveBy { get; set; } = true;
+        public int ItemChoiceType { get; set; } = 0;
 
         [FromQuery]
         public int EnquiryType { get; set; } = 0;

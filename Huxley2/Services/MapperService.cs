@@ -39,15 +39,21 @@ namespace Huxley2.Services {
             };
         }
 
-        private static RealtimeJourneyPlanRequestOutwardTime makeJPArrivalTime(JourneyPlannerRequest request) {
-            var elementName = ItemChoiceType1.arriveBy;
-
-            if (request.ArriveBy == false) {
-                elementName = ItemChoiceType1.departBy;
+        private static DateTime GetPlannedTime(ItemChoiceType1 itemChoiceType, DateTime plannedTime)
+        {
+            if (itemChoiceType == ItemChoiceType1.firstTrainOfDay || itemChoiceType == ItemChoiceType1.lastTrainOfDay)
+            {
+                return plannedTime;
             }
+            return plannedTime;
+        }
+
+        private static RealtimeJourneyPlanRequestOutwardTime makeJPArrivalTime(JourneyPlannerRequest request) {
+            var itemChoiceType = GetItemChoiceType(request);
+
             return new RealtimeJourneyPlanRequestOutwardTime {
-                Item = request.PlannedTime,
-                ItemElementName = elementName
+                Item = GetPlannedTime(itemChoiceType, request.PlannedTime),
+                ItemElementName = itemChoiceType
             };
         }
 
@@ -96,6 +102,28 @@ namespace Huxley2.Services {
                 return new ItemsChoiceType[] { ItemsChoiceType.via };
             }
             return Array.Empty<ItemsChoiceType>();
+        }
+
+        private static ItemChoiceType1 GetItemChoiceType(JourneyPlannerRequest request)
+        {
+            if (request.ItemChoiceType == 0)
+            {
+                return ItemChoiceType1.arriveBy;
+            }
+            else if (request.ItemChoiceType == 1)
+            {
+                return ItemChoiceType1.departBy;
+            }
+            else if (request.ItemChoiceType == 2)
+            {
+                return ItemChoiceType1.firstTrainOfDay;
+            }
+            else if (request.ItemChoiceType == 3)
+            {
+                return ItemChoiceType1.lastTrainOfDay;
+            }
+            return ItemChoiceType1.arriveBy;
+
         }
 
         private static RealtimeEnquiryType GetRealtimeEnquiryType(JourneyPlannerRequest request)
