@@ -137,5 +137,53 @@
         "StationName": "Bourg St Maurice", 
         "CrsCode": "XIB", 
         "Longitude": 6.7734105
+    },
+    {
+        "Latitude": 55.9856, 
+        "StationName": "East Linton",
+        "CrsCode": "ELT", 
+        "Longitude": -2.6579
+    },
+    {
+        "Latitude": 53.4911, 
+        "StationName": "Headbolt Lane",
+        "CrsCode": "HBL", 
+        "Longitude": -2.8856
+    },
+    {
+        "Latitude": 57.5335, 
+        "StationName": "Inverness Airport",
+        "CrsCode": "IVA", 
+        "Longitude": -4.0552
+    },
+    {
+        "Latitude": 50.704, 
+        "StationName": "Marsh Barton",
+        "CrsCode": "MBT", 
+        "Longitude": -3.521
+    },
+    {
+        "Latitude": 51.488611, 
+        "StationName": "Portway Park And Ride",
+        "CrsCode": "PRI", 
+        "Longitude": -2.688056
+    },
+    {
+        "Latitude": 51.330843, 
+        "StationName": "Thanet Parkway",
+        "CrsCode": "THP", 
+        "Longitude": 1.361777
+    },
+    {
+        "Latitude": 56.189693, 
+        "StationName": "Cameron Bridge",
+        "CrsCode": "CBX", 
+        "Longitude": -3.046855
+    },
+    {
+        "Latitude": 56.1923, 
+        "StationName": "Leven",
+        "CrsCode": "LEV", 
+        "Longitude": -3.002
     }
 ]
