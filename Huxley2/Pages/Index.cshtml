@@ -258,23 +258,31 @@
         The station data is available in the public domain from <a href="http://naptan.app.dft.gov.uk/datarequest/help">Naptan</a>
     </li>
  </ul>
-<h2 id="quick-start">Quick Start</h2>
-<p>
-    Follow these steps to get going:
-</p>
+
+ <h3 id="v2.3-changes">2.3 Update</h2>
 <ul>
     <li>
-        Get an API access token from NRE
-        (<a href="https://realtime.nationalrail.co.uk/OpenLDBWSRegistration/Registration">public</a>
-        or <a href="http://openldbsv.nationalrail.co.uk/self-signup/register">staff</a> or both)
+        Added online journey planner to access the NRE OJP service through a REST API.
     </li>
     <li>
-        Append <code>accessToken=TOKEN</code> to the URL for every request
+    <p>
+        A username and password is required from NRE to access the <a href="https://ojp.nationalrail.co.uk/webservices">service</a>
+    </p>
+    <p>
+        These need to be entered into the Azure App Settings environment variables and are used by the app via Secrets.json.
+        Add the following settings:
+    </p> 
+    <p>
+        <code>ojpEndpoint</code> pointing to the OJP web service.
+    </p>
+    <p>
+        <code>ojpUsername</code> the username given by NRE to access the service.
+    </p>
+    <p>
+        <code>ojpPassword</code> the password given by NRE to access the service.
+    </p>
     </li>
-</ul>
-<p>
-    If you don't want to append the token then read on.
-</p>
+ </ul>
 
                 <h2 id="api-endpoints">API Endpoints</h2>
                 <p>
@@ -600,6 +608,13 @@
                     If the ID is a RID (a 15 digit long integer) then the staff API will be used. In this case a staff
                     access token must be used (unless configured server side).
                 </p>
+
+<h3 id="ojp">Journey Planner</h3>
+<p>
+    <code>
+        <a href="/api/planner/WTN/GLC/2024-11-07T06:25:03?itemChoiceType=1&enquiryType=0">/api/planner/{CRS|Origin}/{CRS|Destination}/{String|DateTime}?{Int|ItemChoiceType}&{Int|enquiryType}&{CRS|via/avoid}&{Bool|directTrains}</a>
+    </code>
+</p>
 
 <h2 id="source-code">Source Code</h2>
 <p>
