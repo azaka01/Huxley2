@@ -17,48 +17,49 @@
         <div class="row">
             <div class="col">
 
-                <div class="jumbotron mt-4 p-4">
-                    <img src="~/img/huxley.png" alt="Huxley proxy logo" class="float-right" width="100" />
-                    <h1 class="display-4">Huxley 2 <small>Community Edition</small></h1>
-                    <p class="lead">A cross-platform JSON proxy for the GB railway Live Departure Boards SOAP API</p>
-                    <hr class="my-4">
-                    <p>
-                        Huxley 2 is a <abbr title="Cross-Origin Resource Sharing">CORS</abbr> enabled
-                        cross-platform <abbr title="JavaScript Object Notation">JSON</abbr>
-                        <abbr title="Representational State Transfer">ReST</abbr> proxy for the
-                        <abbr title="Great Britain">GB</abbr>
-                        <abbr title="National Rail Enquiries">NRE</abbr>
-                        <abbr title="Live Departure Boards">LDB</abbr>
-                        <abbr title="Windows Communication Foundation">WCF</abbr>
-                        <a href="http://harmful.cat-v.org/software/xml/soap/simple">
-                            <abbr title="Simple Object Access Protocol">SOAP</abbr>
-                        </a> <abbr title="Extensible Markup Language">XML</abbr>
-                        <abbr title="Application Programming Interface">API</abbr>
-                        (called <a href="https://www.nationalrail.co.uk/100296.aspx">Darwin</a>).
-                        It supports both the Public Version (PV) and the Staff Version (SV).
-                        It's built with ASP.NET Core <abbr title="Long Term Support">LTS</abbr> (.NET 6.0), C# 10 and lots of
-                        abbreviations!
-                    </p>
-                    <p>
-                        The primary purpose of Huxley 2 is to allow easy use of the LDB API from browser-based
-                        client-side
-                        <abbr title="Progressive Web Applications">PWAs</abbr> made with JavaScript or TypeScript.
-                        Additionally, it opens up the Windows enterprise API to agile developers on macOS and Linux.
-                    </p>
-                    <p>
-                        <a class="btn btn-success btn-lg mt-3" href="#quick-start" role="button">Get Started</a>
-                    </p>
-                    <p>
-                        Version @UpdateCheckService.CurrentVersion
-                    </p>
-                    @if (UpdateCheckService.UpdateAvailable)
-                    {
-                        <div class="alert alert-info m-0" role="alert">
-                            <a href="@UpdateCheckService.UpdateUrl?.AbsoluteUri">@UpdateCheckService.AvailableVersion</a>
-                            is available
-                        </div>
-                    }
-                </div>
+<div class="jumbotron mt-4 p-4">
+    <img src="~/img/huxley.png" alt="Huxley proxy logo" class="float-right" width="100"/>
+    <h1 class="display-4">Huxley 2 <small>Community Edition</small></h1>
+    <p class="lead">A cross-platform JSON proxy for the GB railway Live Departure Boards SOAP API</p>
+    <hr class="my-4">
+    <p>
+        Huxley 2 is a <abbr title="Cross-Origin Resource Sharing">CORS</abbr> enabled
+        cross-platform <abbr title="JavaScript Object Notation">JSON</abbr>
+        <abbr title="Representational State Transfer">ReST</abbr> proxy for the
+        <abbr title="Great Britain">GB</abbr>
+        <abbr title="National Rail Enquiries">NRE</abbr>
+        <abbr title="Live Departure Boards">LDB</abbr>
+        <abbr title="Windows Communication Foundation">WCF</abbr>
+        <a href="http://harmful.cat-v.org/software/xml/soap/simple">
+            <abbr title="Simple Object Access Protocol">SOAP</abbr>
+        </a> <abbr title="Extensible Markup Language">XML</abbr>
+        <abbr title="Application Programming Interface">API</abbr>
+        (called <a href="https://www.nationalrail.co.uk/100296.aspx">Darwin</a>).
+        It supports both the Public Version (PV) and the Staff Version (SV).
+        It's built with ASP.NET Core <abbr title="Long Term Support">LTS</abbr>, C# 8.0 and lots of abbreviations!
+    </p>
+    <p>
+        The primary purpose of Huxley 2 is to allow easy use of the LDB API from browser-based client-side
+        <abbr title="Progressive Web Applications">PWAs</abbr> made with JavaScript or TypeScript.
+        Additionally, it opens up the Windows enterprise API to agile developers on macOS and Linux.
+    </p>
+    <p>
+        <a class="btn btn-success btn-lg mt-3" href="#quick-start" role="button">Get Started</a>
+    </p>
+    <p>
+        Version @UpdateCheckService.CurrentVersion
+    </p>
+    @if (UpdateCheckService.UpdateAvailable)
+    {
+        <div class="alert alert-info m-0" role="alert">
+            <a href="@UpdateCheckService.UpdateUrl?.AbsoluteUri">@UpdateCheckService.AvailableVersion</a>
+            is available
+        </div>
+    }
+     <p>
+        A fork of Huxley2 which adds mobile friendly data to use with apps and services
+    </p>
+</div>
 
                 <h2>Contents</h2>
                 <ul>
@@ -257,23 +258,31 @@
         The station data is available in the public domain from <a href="http://naptan.app.dft.gov.uk/datarequest/help">Naptan</a>
     </li>
  </ul>
-<h2 id="quick-start">Quick Start</h2>
-<p>
-    Follow these steps to get going:
-</p>
+
+ <h3 id="v2.3-changes">2.3 Update</h2>
 <ul>
     <li>
-        Get an API access token from NRE
-        (<a href="https://realtime.nationalrail.co.uk/OpenLDBWSRegistration/Registration">public</a>
-        or <a href="http://openldbsv.nationalrail.co.uk/self-signup/register">staff</a> or both)
+        Added online journey planner to access the NRE OJP service through a REST API.
     </li>
     <li>
-        Append <code>accessToken=TOKEN</code> to the URL for every request
+    <p>
+        A username and password is required from NRE to access the <a href="https://ojp.nationalrail.co.uk/webservices">service</a>
+    </p>
+    <p>
+        These need to be entered into the Azure App Settings environment variables and are used by the app via Secrets.json.
+        Add the following settings:
+    </p> 
+    <p>
+        <code>ojpEndpoint</code> pointing to the OJP web service.
+    </p>
+    <p>
+        <code>ojpUsername</code> the username given by NRE to access the service.
+    </p>
+    <p>
+        <code>ojpPassword</code> the password given by NRE to access the service.
+    </p>
     </li>
-</ul>
-<p>
-    If you don't want to append the token then read on.
-</p>
+ </ul>
 
                 <h2 id="api-endpoints">API Endpoints</h2>
                 <p>
@@ -592,14 +601,20 @@
                     various different encoders.
                 </p>
                 <p>
-                    This endpoint also accepts the <a href="/service/8c105350-4235-44f3-b076-87fe829c577e">GUID
+                    This endpoint also accepts the <a href="/service/46715300-0000-0000-4248-414d4e57535f">GUID
                         representation of the ID</a>
-                    as <code>/</code>, <code>+</code> and case sensitivity can cause trouble if you're not careful.
                 </p>
                 <p>
                     If the ID is a RID (a 15 digit long integer) then the staff API will be used. In this case a staff
                     access token must be used (unless configured server side).
                 </p>
+
+<h3 id="ojp">Journey Planner</h3>
+<p>
+    <code>
+        <a href="/api/planner/WTN/GLC/2024-11-07T06:25:03?itemChoiceType=1&enquiryType=0">/api/planner/{CRS|Origin}/{CRS|Destination}/{String|DateTime}?{Int|ItemChoiceType}&{Int|enquiryType}&{CRS|via/avoid}&{Bool|directTrains}</a>
+    </code>
+</p>
 
 <h2 id="source-code">Source Code</h2>
 <p>

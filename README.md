@@ -43,6 +43,10 @@ CLIENT_ACCESS_TOKEN=abcde12345
 
 To rebuild use `docker-compose build` or `docker-compose up --build`.
 
+If you want to run the container in the background you can run `docker-compose up --detach`
+
+If you would like the docker container to _reboot upon restart_ on the host machine you can uncomment `restart: always` in the docker-compose.yml file and make sure the docker service is set to start upon bootup. 
+
 ## Station Codes File
 
 If you need to regenerate [the station codes CSV file in this repo](https://raw.githubusercontent.com/jpsingleton/Huxley2/master/station_codes.csv) then you can do so easily with [`jq`](https://stedolan.github.io/jq/) (and `curl`) using an instance that has access to the staff API (and has been restarted recently). On Linux, you can install simply with your package manager, e.g. `sudo apt install jq` (on Ubuntu/Debian).
@@ -58,6 +62,8 @@ If using a local server with a self-signed certificate:
 ```bash
 curl --silent --insecure https://localhost:5001/crs | jq -r '(.[0] | keys_unsorted) as $keys | $keys, map([.[ $keys[] ]])[] | @csv' > station_codes.csv
 ```
+
+If you regenerated the station codes CSV file on your own instance, change `StationCodesCsvUrl` in `Huxley2/appsettings.json` to the location of your CSV file.
 
 ## License
 

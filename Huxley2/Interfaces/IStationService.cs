@@ -1,4 +1,4 @@
-﻿using Huxley2.Models;
+using Huxley2.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,6 +8,8 @@ namespace Huxley2.Interfaces
     {
         IEnumerable<CrsStation> GetLondonTerminals();
         IEnumerable<CrsStation> GetStations(string? query);
+        CrsStation? GetStationByCrsCode(string? query);
+
         Task LoadStations();
     }
 }

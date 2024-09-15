@@ -1,4 +1,4 @@
-﻿// © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
+// © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
 
 using System;
 using System.Collections.Generic;
@@ -8,11 +8,10 @@ using Huxley2.Models;
 using Microsoft.Extensions.Logging;
 using OpenLDBSVWS;
 using OpenLDBWS;
+using NreOJPService;
 
-namespace Huxley2.Services
-{
-    public class MapperService : IMapperService
-    {
+namespace Huxley2.Services {
+    public class MapperService : IMapperService {
         // P for train Services, B for bus services, S for ship services.
         private static string STAFF_SERVICES_CODES = "PBS";
 
@@ -26,18 +25,146 @@ namespace Huxley2.Services
             IAccessTokenService accessTokenService,
             ICrsService crsService,
             IDateTimeService dateTimeService
-            )
-        {
+            ) {
             _logger = logger;
             _accessTokenService = accessTokenService;
             _crsService = crsService;
             _dateTimeService = dateTimeService;
         }
 
-        public OpenLDBWS.GetArrBoardWithDetailsRequest MapGetArrBoardWithDetailsRequest(StationBoardRequest request)
+        private static CrsCode makeJPCrsCode(string crsCode) {
+            return new CrsCode {
+                Item = crsCode,
+                ItemElementName = ItemChoiceType.stationCRS
+            };
+        }
+
+        private static DateTime GetPlannedTime(ItemChoiceType1 itemChoiceType, DateTime plannedTime)
         {
-            return new OpenLDBWS.GetArrBoardWithDetailsRequest
+            if (itemChoiceType == ItemChoiceType1.firstTrainOfDay || itemChoiceType == ItemChoiceType1.lastTrainOfDay)
             {
+                return plannedTime;
+            }
+            return plannedTime;
+        }
+
+        private static RealtimeJourneyPlanRequestOutwardTime makeJPArrivalTime(JourneyPlannerRequest request) {
+            var itemChoiceType = GetItemChoiceType(request);
+
+            return new RealtimeJourneyPlanRequestOutwardTime {
+                Item = GetPlannedTime(itemChoiceType, request.PlannedTime),
+                ItemElementName = itemChoiceType
+            };
+        }
+
+        private static RealtimeJourneyPlanRequest makeJPRequest(JourneyPlannerRequest request) {
+
+            return new RealtimeJourneyPlanRequest {
+                origin = makeJPCrsCode(request.OriginCrs),
+                destination = makeJPCrsCode(request.DestinationCrs),
+                realtimeEnquiry = GetRealtimeEnquiryType(request),
+                outwardTime = makeJPArrivalTime(request),
+                ItemsElementName = GetItems(request),
+                Items = GetItemCrsCodes(request),
+                directTrains = GetDirectTrainsStatus(request)
+            };
+        }
+
+        private static bool GetDirectTrainsStatus(JourneyPlannerRequest request)
+        {
+            if (request.DirectTrains == false) return false;
+
+            return true;
+        }
+
+        private static CrsCode[] GetItemCrsCodes(JourneyPlannerRequest request)
+        {
+            if (request.AvoidCrs != null)
+            {
+                return new CrsCode[] { makeJPCrsCode(request.AvoidCrs) };
+            }
+            else if (request.ViaCrs != null)
+            {
+                return new CrsCode[] { makeJPCrsCode(request.ViaCrs) };
+            }
+            return Array.Empty<CrsCode>();
+        }
+
+
+        private static ItemsChoiceType[] GetItems(JourneyPlannerRequest request)
+        {
+            if (request.AvoidCrs != null)
+            {
+                return new ItemsChoiceType[] { ItemsChoiceType.notVia };
+            }
+            else if (request.ViaCrs != null)
+            {
+                return new ItemsChoiceType[] { ItemsChoiceType.via };
+            }
+            return Array.Empty<ItemsChoiceType>();
+        }
+
+        private static ItemChoiceType1 GetItemChoiceType(JourneyPlannerRequest request)
+        {
+            if (request.ItemChoiceType == 0)
+            {
+                return ItemChoiceType1.arriveBy;
+            }
+            else if (request.ItemChoiceType == 1)
+            {
+                return ItemChoiceType1.departBy;
+            }
+            else if (request.ItemChoiceType == 2)
+            {
+                return ItemChoiceType1.firstTrainOfDay;
+            }
+            else if (request.ItemChoiceType == 3)
+            {
+                return ItemChoiceType1.lastTrainOfDay;
+            }
+            return ItemChoiceType1.arriveBy;
+
+        }
+
+        private static RealtimeEnquiryType GetRealtimeEnquiryType(JourneyPlannerRequest request)
+        {
+            if (request.EnquiryType == 0)
+            {
+                return RealtimeEnquiryType.STANDARD;
+
+            } else
+            {
+                return RealtimeEnquiryType.CHECK_ALTERNATIVES;
+            }
+        }
+
+        public RealtimeJourneyPlanRequest1 MapGetJourneyPlannerRequest(JourneyPlannerRequest request) {
+            return new RealtimeJourneyPlanRequest1 {
+                RealtimeJourneyPlanRequest = makeJPRequest(request)
+            };
+        }
+
+        private static RealtimeCallingPointsRequest makeCallingPointsRequest(JourneyCallingPointsRequest request)
+        {
+            return new RealtimeCallingPointsRequest
+            {
+                origin = request.OriginCrs,
+                destination = request.DestinationCrs,
+                departure = request.DepartureTime,
+                arrival = request.ArrivalTime
+            };
+        }
+
+        public RealtimeCallingPointsRequest1 MapGetCallingPointsRequest(JourneyCallingPointsRequest request)
+        {
+            return new RealtimeCallingPointsRequest1
+            {
+                RealtimeCallingPointsRequest = makeCallingPointsRequest(request)
+            };
+        }
+
+        public OpenLDBWS.GetArrBoardWithDetailsRequest MapGetArrBoardWithDetailsRequest(StationBoardRequest request) {
+            return new OpenLDBWS.GetArrBoardWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterCrs = MakeFilterCrs(request.FilterCrs),
@@ -48,10 +175,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBSVWS.GetArrBoardWithDetailsRequest MapGetArrBoardWithDetailsStaffRequest(StationBoardRequest request)
-        {
-            return new OpenLDBSVWS.GetArrBoardWithDetailsRequest
-            {
+        public OpenLDBSVWS.GetArrBoardWithDetailsRequest MapGetArrBoardWithDetailsStaffRequest(StationBoardRequest request) {
+            return new OpenLDBSVWS.GetArrBoardWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeStaffAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filtercrs = MakeFilterCrs(request.FilterCrs),
@@ -63,10 +188,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBWS.GetArrDepBoardWithDetailsRequest MapGetArrDepBoardWithDetailsRequest(StationBoardRequest request)
-        {
-            return new OpenLDBWS.GetArrDepBoardWithDetailsRequest
-            {
+        public OpenLDBWS.GetArrDepBoardWithDetailsRequest MapGetArrDepBoardWithDetailsRequest(StationBoardRequest request) {
+            return new OpenLDBWS.GetArrDepBoardWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterCrs = MakeFilterCrs(request.FilterCrs),
@@ -77,10 +200,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBSVWS.GetArrDepBoardWithDetailsRequest MapGetArrDepBoardWithDetailsStaffRequest(StationBoardRequest request)
-        {
-            return new OpenLDBSVWS.GetArrDepBoardWithDetailsRequest
-            {
+        public OpenLDBSVWS.GetArrDepBoardWithDetailsRequest MapGetArrDepBoardWithDetailsStaffRequest(StationBoardRequest request) {
+            return new OpenLDBSVWS.GetArrDepBoardWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeStaffAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filtercrs = MakeFilterCrs(request.FilterCrs),
@@ -92,10 +213,8 @@ namespace Huxley2.Services
             };
         }
 
-        public GetArrivalBoardRequest MapGetArrivalBoardRequest(StationBoardRequest request)
-        {
-            return new GetArrivalBoardRequest
-            {
+        public GetArrivalBoardRequest MapGetArrivalBoardRequest(StationBoardRequest request) {
+            return new GetArrivalBoardRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterCrs = MakeFilterCrs(request.FilterCrs),
@@ -106,10 +225,8 @@ namespace Huxley2.Services
             };
         }
 
-        public GetArrivalBoardByCRSRequest MapGetArrivalBoardStaffRequest(StationBoardRequest request)
-        {
-            return new GetArrivalBoardByCRSRequest
-            {
+        public GetArrivalBoardByCRSRequest MapGetArrivalBoardStaffRequest(StationBoardRequest request) {
+            return new GetArrivalBoardByCRSRequest {
                 AccessToken = _accessTokenService.MakeStaffAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filtercrs = MakeFilterCrs(request.FilterCrs),
@@ -121,10 +238,8 @@ namespace Huxley2.Services
             };
         }
 
-        public GetArrivalDepartureBoardRequest MapGetArrivalDepartureBoardRequest(StationBoardRequest request)
-        {
-            return new GetArrivalDepartureBoardRequest
-            {
+        public GetArrivalDepartureBoardRequest MapGetArrivalDepartureBoardRequest(StationBoardRequest request) {
+            return new GetArrivalDepartureBoardRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterCrs = MakeFilterCrs(request.FilterCrs),
@@ -135,10 +250,8 @@ namespace Huxley2.Services
             };
         }
 
-        public GetArrivalDepartureBoardByCRSRequest MapGetArrivalDepartureBoardStaffRequest(StationBoardRequest request)
-        {
-            return new GetArrivalDepartureBoardByCRSRequest
-            {
+        public GetArrivalDepartureBoardByCRSRequest MapGetArrivalDepartureBoardStaffRequest(StationBoardRequest request) {
+            return new GetArrivalDepartureBoardByCRSRequest {
                 AccessToken = _accessTokenService.MakeStaffAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filtercrs = MakeFilterCrs(request.FilterCrs),
@@ -150,10 +263,8 @@ namespace Huxley2.Services
             };
         }
 
-        public GetDepartureBoardRequest MapGetDepartureBoardRequest(StationBoardRequest request)
-        {
-            return new GetDepartureBoardRequest
-            {
+        public GetDepartureBoardRequest MapGetDepartureBoardRequest(StationBoardRequest request) {
+            return new GetDepartureBoardRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterCrs = MakeFilterCrs(request.FilterCrs),
@@ -164,10 +275,8 @@ namespace Huxley2.Services
             };
         }
 
-        public GetDepartureBoardByCRSRequest MapGetDepartureBoardStaffRequest(StationBoardRequest request)
-        {
-            return new GetDepartureBoardByCRSRequest
-            {
+        public GetDepartureBoardByCRSRequest MapGetDepartureBoardStaffRequest(StationBoardRequest request) {
+            return new GetDepartureBoardByCRSRequest {
                 AccessToken = _accessTokenService.MakeStaffAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filtercrs = MakeFilterCrs(request.FilterCrs),
@@ -179,10 +288,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBWS.GetDepBoardWithDetailsRequest MapGetDepBoardWithDetailsRequest(StationBoardRequest request)
-        {
-            return new OpenLDBWS.GetDepBoardWithDetailsRequest
-            {
+        public OpenLDBWS.GetDepBoardWithDetailsRequest MapGetDepBoardWithDetailsRequest(StationBoardRequest request) {
+            return new OpenLDBWS.GetDepBoardWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterCrs = MakeFilterCrs(request.FilterCrs),
@@ -193,10 +300,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBSVWS.GetDepBoardWithDetailsRequest MapGetDepBoardWithDetailsStaffRequest(StationBoardRequest request)
-        {
-            return new OpenLDBSVWS.GetDepBoardWithDetailsRequest
-            {
+        public OpenLDBSVWS.GetDepBoardWithDetailsRequest MapGetDepBoardWithDetailsStaffRequest(StationBoardRequest request) {
+            return new OpenLDBSVWS.GetDepBoardWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeStaffAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filtercrs = MakeFilterCrs(request.FilterCrs),
@@ -208,10 +313,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBWS.GetFastestDeparturesRequest MapGetFastestDeparturesRequest(StationBoardRequest request)
-        {
-            return new OpenLDBWS.GetFastestDeparturesRequest
-            {
+        public OpenLDBWS.GetFastestDeparturesRequest MapGetFastestDeparturesRequest(StationBoardRequest request) {
+            return new OpenLDBWS.GetFastestDeparturesRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterList = MakeFilterList(request.FilterList, 15),
@@ -220,10 +323,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBSVWS.GetFastestDeparturesRequest MapGetFastestDeparturesStaffRequest(StationBoardRequest request)
-        {
-            return new OpenLDBSVWS.GetFastestDeparturesRequest
-            {
+        public OpenLDBSVWS.GetFastestDeparturesRequest MapGetFastestDeparturesStaffRequest(StationBoardRequest request) {
+            return new OpenLDBSVWS.GetFastestDeparturesRequest {
                 AccessToken = _accessTokenService.MakeStaffAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterList = MakeFilterList(request.FilterList, 15),
@@ -233,10 +334,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBWS.GetFastestDeparturesWithDetailsRequest MapGetFastestDeparturesWithDetailsRequest(StationBoardRequest request)
-        {
-            return new OpenLDBWS.GetFastestDeparturesWithDetailsRequest
-            {
+        public OpenLDBWS.GetFastestDeparturesWithDetailsRequest MapGetFastestDeparturesWithDetailsRequest(StationBoardRequest request) {
+            return new OpenLDBWS.GetFastestDeparturesWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterList = MakeFilterList(request.FilterList, 10),
@@ -245,10 +344,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBSVWS.GetFastestDeparturesWithDetailsRequest MapGetFastestDeparturesWithDetailsStaffRequest(StationBoardRequest request)
-        {
-            return new OpenLDBSVWS.GetFastestDeparturesWithDetailsRequest
-            {
+        public OpenLDBSVWS.GetFastestDeparturesWithDetailsRequest MapGetFastestDeparturesWithDetailsStaffRequest(StationBoardRequest request) {
+            return new OpenLDBSVWS.GetFastestDeparturesWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeStaffAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterList = MakeFilterList(request.FilterList, 10),
@@ -258,10 +355,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBWS.GetNextDeparturesRequest MapGetNextDeparturesRequest(StationBoardRequest request)
-        {
-            return new OpenLDBWS.GetNextDeparturesRequest
-            {
+        public OpenLDBWS.GetNextDeparturesRequest MapGetNextDeparturesRequest(StationBoardRequest request) {
+            return new OpenLDBWS.GetNextDeparturesRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterList = MakeFilterList(request.FilterList, 25),
@@ -270,10 +365,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBSVWS.GetNextDeparturesRequest MapGetNextDeparturesStaffRequest(StationBoardRequest request)
-        {
-            return new OpenLDBSVWS.GetNextDeparturesRequest
-            {
+        public OpenLDBSVWS.GetNextDeparturesRequest MapGetNextDeparturesStaffRequest(StationBoardRequest request) {
+            return new OpenLDBSVWS.GetNextDeparturesRequest {
                 AccessToken = _accessTokenService.MakeStaffAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterList = MakeFilterList(request.FilterList, 25),
@@ -283,10 +376,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBWS.GetNextDeparturesWithDetailsRequest MapGetNextDeparturesWithDetailsRequest(StationBoardRequest request)
-        {
-            return new OpenLDBWS.GetNextDeparturesWithDetailsRequest
-            {
+        public OpenLDBWS.GetNextDeparturesWithDetailsRequest MapGetNextDeparturesWithDetailsRequest(StationBoardRequest request) {
+            return new OpenLDBWS.GetNextDeparturesWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterList = MakeFilterList(request.FilterList, 10),
@@ -295,10 +386,8 @@ namespace Huxley2.Services
             };
         }
 
-        public OpenLDBSVWS.GetNextDeparturesWithDetailsRequest MapGetNextDeparturesWithDetailsStaffRequest(StationBoardRequest request)
-        {
-            return new OpenLDBSVWS.GetNextDeparturesWithDetailsRequest
-            {
+        public OpenLDBSVWS.GetNextDeparturesWithDetailsRequest MapGetNextDeparturesWithDetailsStaffRequest(StationBoardRequest request) {
+            return new OpenLDBSVWS.GetNextDeparturesWithDetailsRequest {
                 AccessToken = _accessTokenService.MakeStaffAccessToken(request),
                 crs = _crsService.MakeCrsCode(request.Crs),
                 filterList = MakeFilterList(request.FilterList, 10),
@@ -308,20 +397,16 @@ namespace Huxley2.Services
             };
         }
 
-        private string? MakeFilterCrs(string? filterCrs)
-        {
+        private string? MakeFilterCrs(string? filterCrs) {
             return string.IsNullOrWhiteSpace(filterCrs) ? null : _crsService.MakeCrsCode(filterCrs);
         }
 
-        private string[] MakeFilterList(IEnumerable<string> filterList, int maxLength)
-        {
-            if (!filterList.Any())
-            {
+        private string[] MakeFilterList(IEnumerable<string> filterList, int maxLength) {
+            if (!filterList.Any()) {
                 throw new Exception("At least 1 filter CRS code required");
             }
             // If filterList exceeds max length then API call will fail
-            if (filterList.Count() > maxLength)
-            {
+            if (filterList.Count() > maxLength) {
                 _logger.LogWarning($"Filter list truncated to {maxLength}");
             }
             return filterList.Select(_crsService.MakeCrsCode).Take(maxLength).ToArray();

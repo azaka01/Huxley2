@@ -1,8 +1,11 @@
-﻿// © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
+// © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.AzureAppServices;
 
 namespace Huxley2
 {
@@ -16,6 +19,20 @@ namespace Huxley2
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             // CreateDefaultBuilder adds Console, Debug, EventSource and EventLog (Windows only from Core 3+) logging providers
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging((hostingContext, logging) =>
+                {
+                    logging.ClearProviders();
+                    logging.AddConsole();
+                    logging.AddAzureWebAppDiagnostics();
+                })
+                .ConfigureServices(serviceCollection => serviceCollection
+                .Configure<AzureFileLoggerOptions>(options => {
+                    options.FileName = "onrails-diagnostics-";
+                    options.FileSizeLimit = 50 * 1024;
+                    options.RetainedFileCountLimit = 5;
+                }).Configure<AzureBlobLoggerOptions>(options => {
+                    options.BlobName = "onrailslog.txt";
+                }))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
