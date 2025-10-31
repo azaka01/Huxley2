@@ -1,5 +1,29 @@
 [
     {
+        "Latitude": 51.7574,
+        "StationName": "Beaulieu Park",
+        "CrsCode": "BPA",
+        "Longitude": 0.5187
+    },
+    {
+        "Latitude": 51.4788,
+        "StationName": "Ashley Down",
+        "CrsCode": "ASD",
+        "Longitude": -2.5767
+    },
+    {
+        "Latitude": 55.102819,
+        "StationName": "Newsham",
+        "CrsCode": "NWH",
+        "Longitude": -1.523944
+    },
+    {
+        "Latitude": 55.125,
+        "StationName": "Blyth Bebside",
+        "CrsCode": "BLI",
+        "Longitude": -1.5571
+    },
+    {
         "Latitude": 51.471,
         "StationName": "Heathrow Terminals 2 & 3",
         "CrsCode": "HXX",
@@ -35,7 +59,6 @@
         "Longitude": 0.114764,
         "CrsCode": "BGV"
     },
-    
     {
         "Latitude": 51.5061,
         "StationName": "Canary Wharf (Elizabeth Line)",
