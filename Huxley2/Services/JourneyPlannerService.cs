@@ -2,21 +2,50 @@ using Huxley2.Exceptions;using Huxley2.Interfaces;using Huxley2.Models;using 
 
         async Task<OjpCallingPointsResponse> IJourneyPlannerService.GetJourneyCallingPointsAsync(JourneyCallingPointsRequest request)
         {
-            var response = await _jpClient.RealtimeCallingPointsAsync(                    _mapperService.MapGetCallingPointsRequest(request)                    );
-            var usableResponse = response.RealtimeCallingPointsResponse;
-            // usableResponse could be null
+            var clock = Stopwatch.StartNew();
 
-            if (usableResponse != null)
+            try
             {
-                var ojpCpLegs = new List<OjpCallingPointLeg>();
+                var soapRequest = _mapperService.MapGetCallingPointsRequest(request);
 
-                foreach (var leg in usableResponse.leg)
+                var response = await _jpClient.RealtimeCallingPointsAsync(soapRequest);
+
+                if (response == null)
+                {
+                    throw new OjpUpstreamException("OJP returned null calling points response wrapper.");
+                }
+
+                var usableResponse = response.RealtimeCallingPointsResponse;
+
+                if (usableResponse == null)
+                {
+                    // This is the key change:
+                    // If SOAP sent a fault envelope, your inspector should have captured it.
+                    var ctx = OjpCallContextAccessor.Current.Value;
+
+                    var faultCode = ctx?.FaultCode;
+
+                    if (!string.IsNullOrWhiteSpace(faultCode))
+                    {
+                        throw new OjpFaultException(
+                            operation: ctx?.Operation ?? "RealtimeCallingPoints",
+                            response: faultCode,
+                            responseDetails: ctx?.FaultDetails);
+                    }
+
+                    // No captured fault, but still no payload => treat as upstream error
+                    throw new OjpUpstreamException("RealtimeCallingPointsResponse was null (fault or empty response).");
+                }
+
+                // Normal mapping logic...
+                var ojpCpLegs = new List<OjpCallingPointLeg>();
+                foreach (var leg in usableResponse.leg ?? Array.Empty<RealtimeCallingPointsResponseLeg>())
                 {
                     var singlePointLegs = new List<OjpSingleCallingPointLeg>();
 
-                    foreach (var singleLeg in leg.realtimeCallingPoint)
+                    foreach (var singleLeg in leg.realtimeCallingPoint ?? Array.Empty<RealtimeCallingPointsResponseLegRealtimeCallingPoint>())
                     {
-                        singlePointLegs.Add(new OjpSingleCallingPointLeg()
+                        singlePointLegs.Add(new OjpSingleCallingPointLeg
                         {
                             Station = _stationService.GetStationByCrsCode(singleLeg.station),
                             Platform = singleLeg.platform,
@@ -27,7 +56,6 @@ using Huxley2.Exceptions;using Huxley2.Interfaces;using Huxley2.Models;using 
                             StationDelayOrCancelData = GetDelayOrCancelData(singleLeg)
                         });
                     }
-                    ;
 
                     ojpCpLegs.Add(new OjpCallingPointLeg
                     {
@@ -49,14 +77,23 @@ using Huxley2.Exceptions;using Huxley2.Interfaces;using Huxley2.Models;using 
                     OjpCpLegs = ojpCpLegs
                 };
             }
-            else
+            catch (TimeoutException ex)
             {
-                return new OjpCallingPointsResponse
-                {
-                    // TODO include status field that no repsonse was received
-                };
+                _logger.LogWarning(ex, "OJP SOAP timeout (calling points)");
+                throw; // controller maps to 504
+            }
+            catch (CommunicationException ex)
+            {
+                _logger.LogError(ex, "OJP SOAP communication failure (calling points)");
+                throw; // controller maps to 502
+            }
+            finally
+            {
+                clock.Stop();
+                _logger.LogInformation("CallingPoints SOAP elapsed {ElapsedMs}ms", clock.ElapsedMilliseconds);
             }
         }
+
 
         private static OjpCallingPointDelayOrCancelData? GetDelayOrCancelData(RealtimeCallingPointsResponseLegRealtimeCallingPoint response)
         {

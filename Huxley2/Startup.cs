@@ -31,22 +31,19 @@ namespace Huxley2
         {
             _enableUpdateCheck = config.GetValue<bool>("EnableUpdateCheck");
             // these values are configured in secrets.json for local development and AppSettings.json in Azure
-            endPoint = config.GetConnectionString("ojpEndpoint")
-                ?? throw new InvalidOperationException("Missing ConnectionStrings:ojpEndpoint");
+            // Prefer App Settings (Environment variables), fallback to ConnectionStrings section.
+            endPoint = config["ojpEndpoint"]
+                      ?? config.GetConnectionString("ojpEndpoint")
+                      ?? throw new InvalidOperationException("Missing ojpEndpoint (AppSetting) or ConnectionStrings:ojpEndpoint");
 
-            userName = config.GetConnectionString("ojpUsername")
-                ?? throw new InvalidOperationException("Missing ConnectionStrings:ojpUsername");
+            userName = config["ojpUsername"]
+                      ?? config.GetConnectionString("ojpUsername")
+                      ?? throw new InvalidOperationException("Missing ojpUsername (AppSetting) or ConnectionStrings:ojpUsername");
 
-            password = config.GetConnectionString("ojpPassword")
-                ?? throw new InvalidOperationException("Missing ConnectionStrings:ojpPassword");
+            password = config["ojpPassword"]
+                      ?? config.GetConnectionString("ojpPassword")
+                      ?? throw new InvalidOperationException("Missing ojpPassword (AppSetting) or ConnectionStrings:ojpPassword");
 
-            if (string.IsNullOrWhiteSpace(endPoint) ||
-                string.IsNullOrWhiteSpace(userName) ||
-                string.IsNullOrWhiteSpace(password))
-            {
-                throw new InvalidOperationException(
-                    "Missing OJP config (ConnectionStrings:ojpEndpoint / ojpUsername / ojpPassword)");
-            }
         }
 
         public static void ConfigureServices(IServiceCollection services)
