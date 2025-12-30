@@ -1,6 +1,7 @@
 // © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
 
 using Huxley2.Interfaces;
+using Huxley2.Security;
 using Huxley2.Services;
 using Huxley2.Soap;
 using Microsoft.AspNetCore.Builder;
@@ -14,6 +15,7 @@ using NreOJPService;
 using OpenLDBSVWS;
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Huxley2
 {
@@ -104,13 +106,36 @@ namespace Huxley2
         }
 
         public void Configure(
-    IApplicationBuilder app,
-    IWebHostEnvironment env,
-    ILogger<Startup> logger,
-    ICrsService crsService,
-    IStationService stationService,
-    IUpdateCheckService updateCheckService)
+            IApplicationBuilder app,
+            IWebHostEnvironment env,
+            ILogger<Startup> logger,
+            ICrsService crsService,
+            IStationService stationService,
+            IUpdateCheckService updateCheckService)
         {
+            // ✅ FIRST — absolute earliest hook into the request
+            app.Use(async (context, next) =>
+            {
+                Console.WriteLine(
+                    $"STDOUT HIT {context.Request.Method} {context.Request.Path} TraceId={context.TraceIdentifier}"
+                );
+
+                logger.LogInformation(
+                    "APPLOG HIT {Method} {Path} TraceId={TraceId}",
+                    context.Request.Method,
+                    context.Request.Path,
+                    context.TraceIdentifier
+                );
+
+                context.Response.OnStarting(() =>
+                {
+                    Console.WriteLine($"STDOUT RESP {context.Response.StatusCode} TraceId={context.TraceIdentifier}");
+                    return Task.CompletedTask;
+                });
+
+                await next();
+            });
+
             logger.LogInformation("Configuring Huxley 2 web API application");
 
             if (env.IsDevelopment())
@@ -159,6 +184,10 @@ namespace Huxley2
             // An `Origin` header must be on the request (for a different domain) for CORS to run
             // https://docs.microsoft.com/en-us/aspnet/core/security/cors
             app.UseCors(config => config.AllowAnyOrigin());
+
+            // API key middleware MUST run after UseRouting so endpoint metadata is available,
+            // and before UseEndpoints so it can block/allow.
+            app.UseMiddleware<ApiKeyMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {

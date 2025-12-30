@@ -1,17 +1,19 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Huxley2.Interfaces;
 using Huxley2.Models;
+using Huxley2.Security;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Diagnostics;
 using System.ServiceModel; 
+using System.Threading.Tasks;
 
 namespace Huxley2.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [RequireApiKey]
     public class PlannerController : ControllerBase
     {
         private readonly ILogger<PlannerController> _logger;

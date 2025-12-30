@@ -22,17 +22,28 @@ namespace Huxley2
                 .ConfigureLogging((hostingContext, logging) =>
                 {
                     logging.ClearProviders();
+                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                     logging.AddConsole();
+                    logging.AddDebug();
+                    logging.AddApplicationInsights();
                     logging.AddAzureWebAppDiagnostics();
                 })
-                .ConfigureServices(serviceCollection => serviceCollection
-                .Configure<AzureFileLoggerOptions>(options => {
-                    options.FileName = "onrails-diagnostics-";
-                    options.FileSizeLimit = 50 * 1024;
-                    options.RetainedFileCountLimit = 5;
-                }).Configure<AzureBlobLoggerOptions>(options => {
-                    options.BlobName = "onrailslog.txt";
-                }))
+                .ConfigureServices((hostingContext, serviceCollection) =>
+                {
+                    serviceCollection.AddApplicationInsightsTelemetry();
+                    
+                    serviceCollection
+                        .Configure<AzureFileLoggerOptions>(options =>
+                        {
+                            options.FileName = "onrails-diagnostics-";
+                            options.FileSizeLimit = 50 * 1024;
+                            options.RetainedFileCountLimit = 5;
+                        })
+                        .Configure<AzureBlobLoggerOptions>(options =>
+                        {
+                            options.BlobName = "onrailslog.txt";
+                        });
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
@@ -50,6 +61,5 @@ namespace Huxley2
                         webBuilder.UseIISIntegration();
                     }
                 });
-
     }
 }
