@@ -7,6 +7,7 @@ using Huxley2.Soap;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,6 +22,7 @@ namespace Huxley2
 {
     public class Startup
     {
+        private readonly IConfiguration _config;
         private readonly bool _enableUpdateCheck;
 
         private static string endPoint = "";
@@ -31,6 +33,7 @@ namespace Huxley2
         // ILogger<T> can be passed to the Configure method instead
         public Startup(IConfiguration config)
         {
+            _config = config;
             _enableUpdateCheck = config.GetValue<bool>("EnableUpdateCheck");
             // these values are configured in secrets.json for local development and AppSettings.json in Azure
             // Prefer App Settings (Environment variables), fallback to ConnectionStrings section.
@@ -48,8 +51,11 @@ namespace Huxley2
 
         }
 
-        public static void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
+            // 🔹 Phase 2 prerequisites (add FIRST)
+            services.AddMemoryCache();
+            services.Configure<RateLimitSettings>(_config.GetSection("Security:RateLimit"));
 
             // Shouldn't be a security issue as plaintext isn't chosen by the user and we aren't using auth or sessions
             // https://docs.microsoft.com/en-us/aspnet/core/performance/response-compression?view=aspnetcore-6.0#compression-with-secure-protocol
@@ -138,6 +144,11 @@ namespace Huxley2
 
             logger.LogInformation("Configuring Huxley 2 web API application");
 
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
             if (env.IsDevelopment())
                 logger.LogInformation("OJP endpoint {Endpoint} user {User}", endPoint, userName);
 
@@ -188,6 +199,7 @@ namespace Huxley2
             // API key middleware MUST run after UseRouting so endpoint metadata is available,
             // and before UseEndpoints so it can block/allow.
             app.UseMiddleware<ApiKeyMiddleware>();
+            app.UseMiddleware<AuthClassRateLimitMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {

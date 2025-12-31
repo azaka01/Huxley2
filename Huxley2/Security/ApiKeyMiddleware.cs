@@ -39,7 +39,7 @@ namespace Huxley2.Security
 
             context.Response.OnStarting(() =>
             {
-                var authClass = context.Items.TryGetValue("ApiKeyAuthClass", out var v) ? v : "none";
+                var authClass = context.Items.TryGetValue("ApiKeyAuthClass", out var v) ? v : "NONE";
                 _logger.LogInformation(
                     "APIKEY_RESULT status={StatusCode} authClass={AuthClass} mode={Mode} path={Path} traceId={TraceId}",
                     context.Response.StatusCode, authClass, mode, path, traceId);
@@ -72,7 +72,7 @@ namespace Huxley2.Security
             // Endpoint does not require key → always allow
             if (!requiresKey)
             {
-                context.Items["ApiKeyAuthClass"] = "not_required";
+                context.Items["ApiKeyAuthClass"] = ApiKeyAuthClasses.NotRequired;
 
                 _logger.LogInformation(
                     "APIKEY_DECISION decision=AllowNotRequired mode={Mode} path={Path} traceId={TraceId}",
@@ -88,7 +88,7 @@ namespace Huxley2.Security
             {
                 if (mode == ApiKeyAuthMode.Grace)
                 {
-                    context.Items["ApiKeyAuthClass"] = "legacy";
+                    context.Items["ApiKeyAuthClass"] = ApiKeyAuthClasses.Legacy;
 
                     _logger.LogInformation(
                         "APIKEY_DECISION decision=AllowGraceMissingHeader mode={Mode} path={Path} traceId={TraceId}",
@@ -137,7 +137,7 @@ namespace Huxley2.Security
                 return;
             }
 
-            context.Items["ApiKeyAuthClass"] = "keyed";
+            context.Items["ApiKeyAuthClass"] = ApiKeyAuthClasses.Keyed;
 
             _logger.LogInformation(
                 "APIKEY_DECISION decision=AllowValidKey mode={Mode} path={Path} traceId={TraceId}",
