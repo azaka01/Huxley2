@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Huxley2.Security
@@ -47,6 +48,13 @@ namespace Huxley2.Security
                 return;
             }
 
+            // Do not rate-limit CORS preflight requests
+            if (HttpMethods.IsOptions(context.Request.Method))
+            {
+                await _next(context);
+                return;
+            }
+
             var authClass =
                 context.Items.TryGetValue("ApiKeyAuthClass", out var value)
                 && value is string s
@@ -64,8 +72,8 @@ namespace Huxley2.Security
             var now = DateTimeOffset.UtcNow;
 
             // Partitioning strategy:
-            // - keyed: per (hashed) api key if available, else fallback to traceId bucket
-            // - legacy: per client IP (best-effort)
+            // - keyed: per (hashed) api key when present
+            // - missing/legacy: shared bucket (or per client IP for non-keyed flows)
             // Note: ApiKeyMiddleware doesn't store the raw key in Items (good),
             // so for keyed we read from headers and hash it.
             if (authClass == ApiKeyAuthClasses.Keyed)
@@ -80,12 +88,24 @@ namespace Huxley2.Security
                 }
 
                 var apiKey = context.Request.Headers[apiKeyHeaderName].ToString();
-                var partition = string.IsNullOrWhiteSpace(apiKey) ? "missing" : Sha256Hex(apiKey);
 
-                if (!TryConsume($"rl:KEYED:{partition}", _settings.Keyed.PermitLimit, TimeSpan.FromSeconds(_settings.Keyed.WindowSeconds), now, out var retryAfter))
+                if (string.IsNullOrWhiteSpace(apiKey))
                 {
-                    Reject429(context, authClass, retryAfter);
-                    return;
+                    // Missing key: treat as legacy/anonymous bucket (stricter).
+                    if (!TryConsume("rl:LEGACY:missing", _settings.Legacy.PermitLimit, TimeSpan.FromSeconds(_settings.Legacy.WindowSeconds), now, out var retryAfter))
+                    {
+                        Reject429(context, ApiKeyAuthClasses.Legacy, retryAfter);
+                        return;
+                    }
+                }
+                else
+                {
+                    var partition = Sha256Hex(apiKey);
+                    if (!TryConsume($"rl:KEYED:{partition}", _settings.Keyed.PermitLimit, TimeSpan.FromSeconds(_settings.Keyed.WindowSeconds), now, out var retryAfter))
+                    {
+                        Reject429(context, authClass, retryAfter);
+                        return;
+                    }
                 }
             }
             else
@@ -123,9 +143,9 @@ namespace Huxley2.Security
                 if (counter.Count <= limit)
                     return true;
 
-                var elapsed = (now - counter.WindowStart).TotalSeconds;
-                var remaining = Math.Max(0, counter.WindowSeconds - (int)Math.Floor(elapsed));
-                retryAfterSeconds = remaining > 0 ? remaining : counter.WindowSeconds;
+                var resetAt = counter.WindowStart.AddSeconds(counter.WindowSeconds);
+                var remaining = (int)Math.Ceiling((resetAt - now).TotalSeconds);
+                retryAfterSeconds = Math.Clamp(remaining, 1, counter.WindowSeconds);
                 return false;
             }
         }
@@ -133,7 +153,7 @@ namespace Huxley2.Security
         private void Reject429(HttpContext context, string authClass, int retryAfterSeconds)
         {
             context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-            context.Response.Headers["Retry-After"] = retryAfterSeconds.ToString();
+            context.Response.Headers["Retry-After"] = retryAfterSeconds.ToString(CultureInfo.InvariantCulture);
 
             _logger.LogWarning(
                 "RATE_LIMIT_REJECT status=429 authClass={AuthClass} path={Path} traceId={TraceId} retryAfter={RetryAfterSeconds}s",

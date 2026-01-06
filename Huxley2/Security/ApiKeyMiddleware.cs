@@ -53,9 +53,31 @@ namespace Huxley2.Security
             var hasKeyHeader = context.Request.Headers.TryGetValue(headerName, out var providedValues)
                                && !string.IsNullOrWhiteSpace(providedValues);
 
+            var headers = context.Request.Headers;
+
+            var clientPlatform = headers.TryGetValue("X-Client-Platform", out var p)
+                ? p.ToString()
+                : "unknown";
+
+            var clientVersion = headers.TryGetValue("X-Client-Version", out var v)
+                ? v.ToString()
+                : "unknown";
+
+            var clientBuild = headers.TryGetValue("X-Client-Build", out var b)
+                ? b.ToString()
+                : "unknown";
+
             _logger.LogInformation(
-                "APIKEY_CHECK mode={Mode} path={Path} requiresKey={RequiresKey} headerPresent={HeaderPresent} traceId={TraceId}",
-                mode, path, requiresKey, hasKeyHeader, traceId
+                "APIKEY_CHECK mode={Mode} path={Path} requiresKey={RequiresKey} headerPresent={HeaderPresent} " +
+                "clientPlatform={ClientPlatform} clientVersion={ClientVersion} clientBuild={ClientBuild} traceId={TraceId}",
+                mode,
+                path,
+                requiresKey,
+                hasKeyHeader,
+                clientPlatform,
+                clientVersion,
+                clientBuild,
+                traceId
             );
 
             if (mode == ApiKeyAuthMode.Off)

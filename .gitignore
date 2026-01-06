@@ -347,3 +347,6 @@ healthchecksdb
 
 # Docker build dir
 out/
+
+*-settings.json
+*-settings-backup.json
