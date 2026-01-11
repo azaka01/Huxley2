@@ -1,8 +1,11 @@
+using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
-using Microsoft.Extensions.Logging;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Huxley2.Soap
 {
@@ -55,19 +58,19 @@ namespace Huxley2.Soap
             }
             catch (ObjectDisposedException ex)
             {
-                _logger.LogWarning(ex, "Failed to log SOAP request");
+                _logger.LogWarning(ex, "Failed to log SOAP response");
             }
             catch (System.ServiceModel.CommunicationException ex)
             {
-                _logger.LogWarning(ex, "Failed to log SOAP request");
+                _logger.LogWarning(ex, "Failed to log SOAP response");
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "Failed to log SOAP request");
+                _logger.LogWarning(ex, "Failed to log SOAP response");
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Failed to log SOAP request");
+                _logger.LogWarning(ex, "Failed to log SOAP response");
             }
         }
 
@@ -79,56 +82,54 @@ namespace Huxley2.Soap
             // Keep raw soap optional; if logs already include it, you can omit storing it
             // ctx.RawSoap = soap;
 
-            // RealtimeJourneyPlan fault
             if (soap.Contains("RealtimeJourneyPlanFault", StringComparison.Ordinal))
             {
                 ctx.Operation = "RealtimeJourneyPlan";
-                ctx.FaultCode = ExtractTagValue(soap, "response");
-                ctx.FaultDetails = ExtractTagValue(soap, "responseDetails");
+                ctx.FaultCode = ExtractFaultDetailValue(soap, "response");
+                ctx.FaultDetails = ExtractFaultDetailValue(soap, "responseDetails");
                 return;
             }
 
-            // Calling points fault (if you want the same handling there)
             if (soap.Contains("RealtimeCallingPointsFault", StringComparison.Ordinal))
             {
                 ctx.Operation = "RealtimeCallingPoints";
-                ctx.FaultCode = ExtractTagValue(soap, "response");
-                ctx.FaultDetails = ExtractTagValue(soap, "responseDetails");
+                ctx.FaultCode = ExtractFaultDetailValue(soap, "response");
+                ctx.FaultDetails = ExtractFaultDetailValue(soap, "responseDetails");
             }
         }
 
-        private static string? ExtractTagValue(string xml, string localTagName)
+        private static string? ExtractFaultDetailValue(string xml, string localTagName)
         {
-            // Find the start tag: <ns:tag ...> or <tag ...>
-            var idx = xml.IndexOf("<" + localTagName, StringComparison.Ordinal);
-            var prefixedIdx = xml.IndexOf(":" + localTagName, StringComparison.Ordinal);
+            if (string.IsNullOrWhiteSpace(xml)) return null;
 
-            if (prefixedIdx >= 0)
+            try
             {
-                var lt = xml.LastIndexOf('<', prefixedIdx);
-                if (lt >= 0) idx = (idx < 0) ? lt : Math.Min(idx, lt);
+                var doc = XDocument.Parse(xml, LoadOptions.PreserveWhitespace);
+
+                // Find SOAP Fault (namespace-agnostic)
+                var fault = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Fault");
+                if (fault == null) return null;
+
+                // Fault/detail is the usual location for custom faults
+                var detail = fault.Descendants().FirstOrDefault(e => e.Name.LocalName == "detail");
+                if (detail == null) return null;
+
+                var el = detail.Descendants().FirstOrDefault(e =>
+                    e.Name.LocalName.Equals(localTagName, StringComparison.Ordinal));
+
+                return el?.Value?.Trim();
             }
-
-            if (idx < 0) return null;
-
-            var gt = xml.IndexOf('>', idx);
-            if (gt < 0) return null;
-
-            // Self-closing: <tag .../>
-            if (gt > 0 && xml[gt - 1] == '/')
-                return string.Empty;
-
-            // Find corresponding end tag (we accept any prefix)
-            var end = xml.IndexOf("</", gt + 1, StringComparison.Ordinal);
-            if (end < 0) return null;
-
-            return xml.Substring(gt + 1, end - (gt + 1)).Trim();
+            catch (XmlException)
+            {
+                return null;
+            }
         }
 
+        private const int SoapBufferSizeBytes = 1024 * 1024; // 1 MB
 
         private static string MessageToString(ref Message message)
         {
-            var buffer = message.CreateBufferedCopy(int.MaxValue);
+            var buffer = message.CreateBufferedCopy(SoapBufferSizeBytes);
             var copy = buffer.CreateMessage();
             message = buffer.CreateMessage();
             return copy.ToString();

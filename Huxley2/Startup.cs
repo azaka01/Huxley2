@@ -1,6 +1,7 @@
 // © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
 
 using Huxley2.Interfaces;
+using Huxley2.Models;
 using Huxley2.Security;
 using Huxley2.Services;
 using Huxley2.Soap;
@@ -25,9 +26,9 @@ namespace Huxley2
         private readonly IConfiguration _config;
         private readonly bool _enableUpdateCheck;
 
-        private static string endPoint = "";
-        private static string userName = "";
-        private static string password = "";
+        private readonly string _endPoint;
+        private readonly string _userName;
+        private readonly string _password;
         // Unlike WebHost in ASP.NET Core 2, generic Host doesn't support ILogger<T> Startup constructor injection
         // It only supports IHostEnvironment, IWebHostEnvironment, and IConfiguration
         // ILogger<T> can be passed to the Configure method instead
@@ -37,15 +38,15 @@ namespace Huxley2
             _enableUpdateCheck = config.GetValue<bool>("EnableUpdateCheck");
             // these values are configured in secrets.json for local development and AppSettings.json in Azure
             // Prefer App Settings (Environment variables), fallback to ConnectionStrings section.
-            endPoint = config["ojpEndpoint"]
+            _endPoint = config["ojpEndpoint"]
                       ?? config.GetConnectionString("ojpEndpoint")
                       ?? throw new InvalidOperationException("Missing ojpEndpoint (AppSetting) or ConnectionStrings:ojpEndpoint");
 
-            userName = config["ojpUsername"]
+            _userName = config["ojpUsername"]
                       ?? config.GetConnectionString("ojpUsername")
                       ?? throw new InvalidOperationException("Missing ojpUsername (AppSetting) or ConnectionStrings:ojpUsername");
 
-            password = config["ojpPassword"]
+            _password = config["ojpPassword"]
                       ?? config.GetConnectionString("ojpPassword")
                       ?? throw new InvalidOperationException("Missing ojpPassword (AppSetting) or ConnectionStrings:ojpPassword");
 
@@ -56,6 +57,12 @@ namespace Huxley2
             // 🔹 Phase 2 prerequisites (add FIRST)
             services.AddMemoryCache();
             services.Configure<RateLimitSettings>(_config.GetSection("Security:RateLimit"));
+
+            services
+            .AddOptions<ApiKeyOptions>()
+            .Bind(_config.GetSection("Security"))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.ApiKeyHeaderName),
+                "Security:ApiKeyHeaderName is required");
 
             // Shouldn't be a security issue as plaintext isn't chosen by the user and we aren't using auth or sessions
             // https://docs.microsoft.com/en-us/aspnet/core/performance/response-compression?view=aspnetcore-6.0#compression-with-secure-protocol
@@ -80,12 +87,13 @@ namespace Huxley2
             services.AddSingleton<jpservices>(sp =>
             {
                 var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("OjpSoap");
-                return makeClient(logger);
+                return MakeClient(logger);
             });
 
             services.AddSingleton<IAccessTokenService, AccessTokenService>();
             services.AddSingleton<ICrsService, CrsService>();
             services.AddSingleton<IStationService, CrsStationService>();
+            services.AddHostedService<StationWarmupHostedService>();
             services.AddSingleton<IDateTimeService, DateTimeService>();
             services.AddSingleton<IMapperService, MapperService>();
             services.AddSingleton<IStationBoardService, StationBoardService>();
@@ -98,14 +106,11 @@ namespace Huxley2
             // No interface is available but we can mock it by passing in a fake handler to the constructor
             services.AddSingleton<HttpClient>();
         }
-
-        private static jpservicesClient makeClient(ILogger logger)
+        private jpservicesClient MakeClient(ILogger logger)
         {
-            TimeSpan timeout = TimeSpan.FromSeconds(10);
+            var timeout = TimeSpan.FromSeconds(10);
 
-            var client = new jpservicesClient(endPoint, timeout, userName, password);
-
-            // Attach WCF endpoint behavior for raw SOAP logging
+            var client = new jpservicesClient(_endPoint, timeout, _userName, _password);
             client.Endpoint.EndpointBehaviors.Add(new SoapLoggingBehavior(logger));
 
             return client;
@@ -115,8 +120,6 @@ namespace Huxley2
             IApplicationBuilder app,
             IWebHostEnvironment env,
             ILogger<Startup> logger,
-            ICrsService crsService,
-            IStationService stationService,
             IUpdateCheckService updateCheckService)
         {
             // ✅ FIRST — absolute earliest hook into the request
@@ -150,7 +153,7 @@ namespace Huxley2
             });
 
             if (env.IsDevelopment())
-                logger.LogInformation("OJP endpoint {Endpoint} user {User}", endPoint, userName);
+                logger.LogInformation("OJP endpoint {Endpoint} user {User}", _endPoint, _userName);
 
             app.UseResponseCompression();
 
@@ -210,19 +213,14 @@ namespace Huxley2
             logger.LogInformation("Huxley 2 web API application configured");
 
             try
-            {
-                logger.LogInformation("Loading CRS station codes from remote source");
-
-                crsService.LoadCrsCodes().GetAwaiter().GetResult();
-                stationService.LoadStations().GetAwaiter().GetResult();
-
+            { 
                 if (_enableUpdateCheck)
                 {
                     logger.LogInformation("Checking for any available updates to Huxley");
                     updateCheckService.CheckForUpdates().GetAwaiter().GetResult();
                 }
             }
-            catch (Exception e) when (e is CrsServiceException || e is UpdateCheckServiceException)
+            catch (UpdateCheckServiceException e)
             {
                 logger.LogError(e, "Non-fatal startup failure");
             }

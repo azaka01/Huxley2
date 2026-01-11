@@ -310,18 +310,27 @@ using Huxley2.Exceptions;using Huxley2.Interfaces;using Huxley2.Models;using 
             {
                 sw.Stop();
 
-                // This is the most valuable log for “directTrains=true not valid” and similar.
                 _logger.LogError(fault,
-                    "OJP SOAP FAULT (typed) ElapsedMs={ElapsedMs} Detail={@Detail}",
-                    sw.ElapsedMilliseconds,
-                    fault.Detail);
+                "OJP SOAP FAULT (typed) ElapsedMs={ElapsedMs} Detail={@Detail}",
+                sw.ElapsedMilliseconds,
+                fault.Detail);
 
-                throw;
+                var detail = fault.Detail;
+
+                // Convert enum → string for controller mapping
+                var faultCode = detail.response.ToString();
+
+                throw new OjpFaultException(
+                    operation: "RealtimeJourneyPlan",
+                    response: faultCode,
+                    responseDetails: detail.responseDetails
+                );
             }
 
             catch (FaultException fault)
             {
                 sw.Stop();
+
                 _logger.LogError(fault,
                     "OJP SOAP FAULT (untyped) ElapsedMs={ElapsedMs} Action={Action} Code={Code} Reason={Reason}",
                     sw.ElapsedMilliseconds,
@@ -329,7 +338,12 @@ using Huxley2.Exceptions;using Huxley2.Interfaces;using Huxley2.Models;using 
                     fault.Code?.Name,
                     fault.Reason?.ToString());
 
-                throw;
+                // Best-effort mapping for untyped faults
+                throw new OjpFaultException(
+                    operation: "RealtimeJourneyPlan",
+                    response: fault.Code?.Name ?? "SOAP_FAULT",
+                    responseDetails: fault.Reason?.ToString()
+                );
             }
 
             catch (TimeoutException ex)

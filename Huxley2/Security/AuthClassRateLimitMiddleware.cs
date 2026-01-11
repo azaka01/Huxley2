@@ -100,7 +100,7 @@ namespace Huxley2.Security
                 }
                 else
                 {
-                    var partition = Sha256Hex(apiKey);
+                    var partition = GetPartitionForApiKey(apiKey);
                     if (!TryConsume($"rl:KEYED:{partition}", _settings.Keyed.PermitLimit, TimeSpan.FromSeconds(_settings.Keyed.WindowSeconds), now, out var retryAfter))
                     {
                         Reject429(context, authClass, retryAfter);
@@ -121,6 +121,16 @@ namespace Huxley2.Security
             await _next(context);
         }
 
+        private string GetPartitionForApiKey(string apiKey)
+        {
+            var partition = _cache.GetOrCreate("rl:PART:" + apiKey, entry =>
+            {
+                entry.SlidingExpiration = TimeSpan.FromHours(6);
+                return Sha256Hex(apiKey);
+            });
+
+            return partition!;
+        }
         private bool TryConsume(string cacheKey, int limit, TimeSpan window, DateTimeOffset now, out int retryAfterSeconds)
         {
             retryAfterSeconds = 0;

@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -28,127 +27,220 @@ namespace Huxley2.Services
         private readonly IConfiguration _config;
         private readonly HttpClient _httpClient;
 
-        private List<CrsStation> _stations = new List<CrsStation>();
-        private List<CrsStation> _londonTerminals = new List<CrsStation>();
+        private volatile IReadOnlyList<CrsStation> _stations = Array.Empty<CrsStation>();
+        private volatile IReadOnlyList<CrsStation> _londonTerminals = Array.Empty<CrsStation>();
+        private volatile bool _isReady;
+
+        public bool IsReady => _isReady;
 
         public CrsStationService(
-                ILogger<CrsStationService> logger,
-                IConfiguration config,
-                HttpClient httpClient
-            )
+            ILogger<CrsStationService> logger,
+            IConfiguration config,
+            HttpClient httpClient)
         {
             _logger = logger;
             _config = config;
             _httpClient = httpClient;
         }
 
-        IEnumerable<CrsStation> IStationService.GetLondonTerminals() {
-            throw new System.NotImplementedException();
-        }
+        public IEnumerable<CrsStation> GetLondonTerminals() => _londonTerminals;
 
-        public async Task LoadStations() {
-            try {
-                await GetCrsCodesFromCsvDownload();
-                await GetStationsFromJSONSource();
-            } catch (CrsServiceException) {
-                // A failure here means we can't proceed
-                return;
-            }
-        }
+        public async Task LoadStations()
+        {
+            // Build locally first; publish atomically at the end.
+            var csvStations = await LoadFromCsvAsync().ConfigureAwait(false);
+            var jsonAddendum = await LoadFromJsonAddendumAsync().ConfigureAwait(false); // optional
 
-        private async Task GetStationsFromJSONSource() {
-            try {
-                var jsonUri = new Uri(_config["RailStationsAddendumUrl"]);
-                var jsonStream = await _httpClient.GetStreamAsync(jsonUri);
-                var stations = await JsonSerializer.DeserializeAsync<List<CrsStation>>(jsonStream);
-                _stations.AddRange(stations);
+            var merged = MergeStations(csvStations, jsonAddendum);
+            var terminals = ComputeLondonTerminals(merged);
 
-            } catch (Exception e) when (
-                  e is HttpRequestException ||
-                  e is SocketException
-                  ) {
-                _logger.LogWarning(e, "Failed to load station list from JSON download");
-            } catch (Exception ex) {
-                _logger.LogError(ex, "Failed to load station list from JSON download");
-                throw new CrsServiceException(
-                    "The CRS service failed to load the station list from the JSON file download.", ex);
-            }
+            _stations = merged;
+            _londonTerminals = terminals;
+            _isReady = true;
+
+            _logger.LogInformation("Stations loaded. Count={Count}, LondonTerminals={TerminalsCount}",
+                _stations.Count, _londonTerminals.Count);
         }
 
         public CrsStation? GetStationByCrsCode(string? query)
         {
             if (string.IsNullOrWhiteSpace(query))
-            {
                 return null;
-            }
 
-            var allStations =  _stations.Where(c => c.CrsCode == query)
-                .Select(c => new CrsStation { CrsCode = c.CrsCode, StationName = c.StationName, Latitude = c.Latitude, Longitude = c.Longitude })
-                .OrderBy(c => c.StationName);
+            var stations = _stations; // snapshot
+            var match = stations.FirstOrDefault(c =>
+                string.Equals(c.CrsCode, query, StringComparison.OrdinalIgnoreCase));
 
-            if (!allStations.Any())
-            {
-                // here we should log the query so the CRS code can be added later
-                _logger.Log(LogLevel.Error,"unable to locate CRS " + query);
-            }
+            if (match == null)
+                _logger.LogError("Unable to locate CRS {Crs}", query);
 
-            return allStations.FirstOrDefault();
+            return match == null
+                ? null
+                : new CrsStation
+                {
+                    CrsCode = match.CrsCode,
+                    StationName = match.StationName,
+                    Latitude = match.Latitude,
+                    Longitude = match.Longitude
+                };
         }
 
-        public IEnumerable<CrsStation> GetStations(string? query) {
-            if (string.IsNullOrWhiteSpace(query)) {
-                return _stations.Select(c => new CrsStation { CrsCode = c.CrsCode, StationName = c.StationName, Latitude = c.Latitude, Longitude = c.Longitude })
+        public IEnumerable<CrsStation> GetStations(string? query)
+        {
+            var stations = _stations; // snapshot
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return stations
+                    .Select(c => new CrsStation
+                    {
+                        CrsCode = c.CrsCode,
+                        StationName = c.StationName,
+                        Latitude = c.Latitude,
+                        Longitude = c.Longitude
+                    })
                     .OrderBy(c => c.StationName);
             }
 
-            if (query.NotNullAndEquals("London Terminals")) {
+            if (query.NotNullAndEquals("London Terminals"))
+            {
                 return _londonTerminals;
             }
 
-            return _stations.Where(c => c.StationName.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) >= 0)
-                .Select(c => new CrsStation { CrsCode = c.CrsCode, StationName = c.StationName, Latitude = c.Latitude, Longitude = c.Longitude })
+            return stations
+                .Where(c => c.StationName.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                .Select(c => new CrsStation
+                {
+                    CrsCode = c.CrsCode,
+                    StationName = c.StationName,
+                    Latitude = c.Latitude,
+                    Longitude = c.Longitude
+                })
                 .OrderBy(c => c.StationName);
         }
 
-        private async Task GetCrsCodesFromCsvDownload() {
+        private async Task<List<CrsStation>> LoadFromCsvAsync()
+        {
             _logger.LogInformation("Loading station list from CSV download");
-            try {
-              
-                var csvUri = new Uri(_config["NaptanStationsUrl"]);
-                var stream = await _httpClient.GetStreamAsync(csvUri);
+
+            var url = _config["NaptanStationsUrl"];
+            if (string.IsNullOrWhiteSpace(url))
+                throw new CrsServiceException("Missing configuration value: NaptanStationsUrl");
+
+            try
+            {
+                using var stream = await _httpClient.GetStreamAsync(new Uri(url)).ConfigureAwait(false);
                 using var reader = new StreamReader(stream);
                 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
-                using (var csvReader = new CsvReader(new StreamReader(stream), CultureInfo.InvariantCulture)) {
-                    _stations.AddRange(csvReader.GetRecords<NaptaStation>().Where(c => _stations.All(code => code.CrsCode != c.CrsCode))
-                                    .Select(c => fromNaptaStation(c)));
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var result = new List<CrsStation>();
+
+                foreach (var rec in csv.GetRecords<NaptaStation>())
+                {
+                    if (string.IsNullOrWhiteSpace(rec.CrsCode))
+                        continue;
+
+                    if (!seen.Add(rec.CrsCode))
+                        continue;
+
+                    result.Add(FromNaptaStation(rec));
                 }
 
-                // Set London Terminals from codes
-                // https://www.nationalrail.co.uk/times_fares/ticket_types/46587.aspx#terminals
-                var lTermCrs = new[] { "BFR", "CST", "CHX", "CTK", "EUS", "FST", "KGX", "LST",
-                "LBG", "MYB", "MOG", "OLD", "PAD", "STP", "VXH", "VIC", "WAT", "WAE", };
-                _londonTerminals.AddRange(_stations.Where(c => lTermCrs.Contains(c.CrsCode))
-                    .Select(c => new CrsStation { CrsCode = c.CrsCode, StationName = c.StationName, Latitude = c.Latitude, Longitude = c.Longitude })
-                    .OrderBy(c => c.StationName));
-
-            } catch (Exception e) when (
-                  e is HttpRequestException ||
-                  e is SocketException
-                  ) {
+                return result;
+            }
+            catch (Exception e) when (e is HttpRequestException || e is SocketException)
+            {
                 _logger.LogWarning(e, "Failed to load station list from CSV download");
-            } catch (Exception ex) {
+                throw new CrsServiceException(
+                    "The CRS service failed to load the station list from the CSV file download.", e);
+            }
+            catch (Exception ex)
+            {
                 _logger.LogError(ex, "Failed to load station list from CSV download");
                 throw new CrsServiceException(
                     "The CRS service failed to load the station list from the CSV file download.", ex);
             }
         }
 
-        private CrsStation fromNaptaStation(NaptaStation naptaStation) {
-            var v = GetLatLon(double.Parse(naptaStation.Easting, CultureInfo.InvariantCulture), double.Parse(naptaStation.Northing, CultureInfo.InvariantCulture));
-            return new CrsStation {
-                // NaPTAN suffixes most station names with "Rail Station" which we don't want
-                StationName = naptaStation.StationName.Replace("Rail Station", "", StringComparison.InvariantCulture).Trim(),
+        private async Task<List<CrsStation>> LoadFromJsonAddendumAsync()
+        {
+            var url = _config["RailStationsAddendumUrl"];
+            if (string.IsNullOrWhiteSpace(url))
+                return new List<CrsStation>(); // optional
+
+            try
+            {
+                using var stream = await _httpClient.GetStreamAsync(new Uri(url)).ConfigureAwait(false);
+                var stations = await JsonSerializer.DeserializeAsync<List<CrsStation>>(stream).ConfigureAwait(false);
+                return stations ?? new List<CrsStation>();
+            }
+            catch (Exception e) when (e is HttpRequestException || e is SocketException)
+            {
+                _logger.LogWarning(e, "Failed to load station list from JSON addendum (optional)");
+                return new List<CrsStation>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load station list from JSON addendum (optional)");
+                return new List<CrsStation>();
+            }
+        }
+
+        private static IReadOnlyList<CrsStation> MergeStations(
+            List<CrsStation> csvStations,
+            List<CrsStation> jsonStations)
+        {
+            // Prefer CSV as baseline, then add JSON entries that introduce new CRS codes
+            var merged = new List<CrsStation>(csvStations);
+            var seen = new HashSet<string>(
+                csvStations.Where(s => !string.IsNullOrWhiteSpace(s.CrsCode)).Select(s => s.CrsCode),
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var s in jsonStations)
+            {
+                if (string.IsNullOrWhiteSpace(s.CrsCode))
+                    continue;
+
+                if (seen.Add(s.CrsCode))
+                    merged.Add(s);
+            }
+
+            return merged;
+        }
+
+        private static IReadOnlyList<CrsStation> ComputeLondonTerminals(IReadOnlyList<CrsStation> stations)
+        {
+            // https://www.nationalrail.co.uk/times_fares/ticket_types/46587.aspx#terminals
+            var lTermCrs = new HashSet<string>(new[]
+            {
+                "BFR","CST","CHX","CTK","EUS","FST","KGX","LST","LBG","MYB","MOG","OLD","PAD","STP","VXH","VIC","WAT","WAE"
+            }, StringComparer.OrdinalIgnoreCase);
+
+            return stations
+                .Where(c => lTermCrs.Contains(c.CrsCode))
+                .Select(c => new CrsStation
+                {
+                    CrsCode = c.CrsCode,
+                    StationName = c.StationName,
+                    Latitude = c.Latitude,
+                    Longitude = c.Longitude
+                })
+                .OrderBy(c => c.StationName)
+                .ToList();
+        }
+
+        private CrsStation FromNaptaStation(NaptaStation naptaStation)
+        {
+            var v = GetLatLon(
+                double.Parse(naptaStation.Easting, CultureInfo.InvariantCulture),
+                double.Parse(naptaStation.Northing, CultureInfo.InvariantCulture));
+
+            return new CrsStation
+            {
+                StationName = naptaStation.StationName
+                    .Replace("Rail Station", "", StringComparison.InvariantCulture)
+                    .Trim(),
                 CrsCode = naptaStation.CrsCode,
                 Latitude = v.Latitude,
                 Longitude = v.Longitude
@@ -157,15 +249,12 @@ namespace Huxley2.Services
 
         private LatitudeLongitude GetLatLon(double easting, double northing)
         {
-            // 1.Convert to Cartesian
             Cartesian cartesian = Convert.ToCartesian(new Airy1830(),
                 new BritishNationalGrid(),
                 new EastingNorthing(easting, northing));
 
-            // 2. Transform from OSBB36 datum to ETRS89 datum
-            Cartesian wgsCartesian = Transform.Osgb36ToEtrs89(cartesian); //ETRS89 is effectively WGS84
+            Cartesian wgsCartesian = Transform.Osgb36ToEtrs89(cartesian);
 
-            // 3. Convert back to Latitude/Longitude
             return Convert.ToLatitudeLongitude(new Wgs84(), wgsCartesian);
         }
     }
