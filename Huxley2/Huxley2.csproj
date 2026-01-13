@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
         <AssemblyName>Huxley2</AssemblyName>
-        <Version>2.3.0</Version>
+        <Version>2.4.0</Version>
         <Copyright>© James Singleton</Copyright>
         <Description>A fork of Huxley2 which adds station locations and journey planner.</Description>
     </PropertyGroup>
