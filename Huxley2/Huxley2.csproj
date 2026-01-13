@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
         <AssemblyName>Huxley2</AssemblyName>
-        <Version>2.3.0</Version>
+        <Version>2.4.0</Version>
         <Copyright>© James Singleton</Copyright>
         <Description>A fork of Huxley2 which adds station locations and journey planner.</Description>
     </PropertyGroup>
@@ -21,6 +21,7 @@
 
     <ItemGroup>
         <PackageReference Include="CsvHelper" Version="28.0.1" />
+        <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
         <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
         <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.2">
             <PrivateAssets>all</PrivateAssets>
@@ -39,5 +40,14 @@
 
     <ItemGroup>
         <WCFMetadata Include="Connected Services" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Logging\" />
+      <Folder Include="Exceptions\" />
     </ItemGroup>
 </Project>

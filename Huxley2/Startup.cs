@@ -1,42 +1,73 @@
 // © James Singleton. EUPL-1.2 (see the LICENSE file for the full license governing this code).
 
-using System;
-using System.Net.Http;
 using Huxley2.Interfaces;
+using Huxley2.Models;
+using Huxley2.Security;
 using Huxley2.Services;
+using Huxley2.Soap;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OpenLDBSVWS;
 using NreOJPService;
-using System.Configuration;
+using OpenLDBSVWS;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 
-namespace Huxley2 {
-    public class Startup {
+namespace Huxley2
+{
+    public class Startup
+    {
+        private readonly IConfiguration _config;
         private readonly bool _enableUpdateCheck;
 
-        private static string endPoint = "";
-        private static string userName = "";
-        private static string password = "";
+        private readonly string _endPoint;
+        private readonly string _userName;
+        private readonly string _password;
         // Unlike WebHost in ASP.NET Core 2, generic Host doesn't support ILogger<T> Startup constructor injection
         // It only supports IHostEnvironment, IWebHostEnvironment, and IConfiguration
         // ILogger<T> can be passed to the Configure method instead
-        public Startup(IConfiguration config) {
+        public Startup(IConfiguration config)
+        {
+            _config = config;
             _enableUpdateCheck = config.GetValue<bool>("EnableUpdateCheck");
             // these values are configured in secrets.json for local development and AppSettings.json in Azure
-            endPoint = config.GetValue<string>("ojpEndpoint");
-            userName = config.GetValue<string>("ojpUsername");
-            password = config.GetValue<string>("ojpPassword");
+            // Prefer App Settings (Environment variables), fallback to ConnectionStrings section.
+            _endPoint = config["ojpEndpoint"]
+                      ?? config.GetConnectionString("ojpEndpoint")
+                      ?? throw new InvalidOperationException("Missing ojpEndpoint (AppSetting) or ConnectionStrings:ojpEndpoint");
+
+            _userName = config["ojpUsername"]
+                      ?? config.GetConnectionString("ojpUsername")
+                      ?? throw new InvalidOperationException("Missing ojpUsername (AppSetting) or ConnectionStrings:ojpUsername");
+
+            _password = config["ojpPassword"]
+                      ?? config.GetConnectionString("ojpPassword")
+                      ?? throw new InvalidOperationException("Missing ojpPassword (AppSetting) or ConnectionStrings:ojpPassword");
+
         }
 
-        public static void ConfigureServices(IServiceCollection services) {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            // 🔹 Phase 2 prerequisites (add FIRST)
+            services.AddMemoryCache();
+            services.Configure<RateLimitSettings>(_config.GetSection("Security:RateLimit"));
+
+            services
+            .AddOptions<ApiKeyOptions>()
+            .Bind(_config.GetSection("Security"))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.ApiKeyHeaderName),
+                "Security:ApiKeyHeaderName is required");
 
             // Shouldn't be a security issue as plaintext isn't chosen by the user and we aren't using auth or sessions
             // https://docs.microsoft.com/en-us/aspnet/core/performance/response-compression?view=aspnetcore-6.0#compression-with-secure-protocol
-            services.AddResponseCompression(options => {
+            services.AddResponseCompression(options =>
+            {
                 options.EnableForHttps = true;
             });
             // AddResponseCaching doesn't appear to add any more services but best to be explicit for the future
@@ -53,12 +84,16 @@ namespace Huxley2 {
                 new LDBSVServiceSoapClient(LDBSVServiceSoapClient.EndpointConfiguration.LDBSVServiceSoap));
             services.AddSingleton<LDBSVRefServiceSoap, LDBSVRefServiceSoapClient>(_ =>
                 new LDBSVRefServiceSoapClient(LDBSVRefServiceSoapClient.EndpointConfiguration.LDBSVRefServiceSoap));
-            services.AddSingleton<jpservices, jpservicesClient>(_ =>
-               makeClient());
+            services.AddSingleton<jpservices>(sp =>
+            {
+                var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("OjpSoap");
+                return MakeClient(logger);
+            });
 
             services.AddSingleton<IAccessTokenService, AccessTokenService>();
             services.AddSingleton<ICrsService, CrsService>();
             services.AddSingleton<IStationService, CrsStationService>();
+            services.AddHostedService<StationWarmupHostedService>();
             services.AddSingleton<IDateTimeService, DateTimeService>();
             services.AddSingleton<IMapperService, MapperService>();
             services.AddSingleton<IStationBoardService, StationBoardService>();
@@ -71,34 +106,91 @@ namespace Huxley2 {
             // No interface is available but we can mock it by passing in a fake handler to the constructor
             services.AddSingleton<HttpClient>();
         }
+        private jpservicesClient MakeClient(ILogger logger)
+        {
+            var timeout = TimeSpan.FromSeconds(10);
 
-        private static jpservicesClient makeClient() {
-            TimeSpan timeout = new TimeSpan(0, 0, 10);
-            jpservicesClient client = new jpservicesClient(endPoint, timeout, userName, password);
+            var client = new jpservicesClient(_endPoint, timeout, _userName, _password);
+            client.Endpoint.EndpointBehaviors.Add(new SoapLoggingBehavior(logger));
+
             return client;
         }
 
-        public async void Configure(
+        public void Configure(
             IApplicationBuilder app,
             IWebHostEnvironment env,
             ILogger<Startup> logger,
-            ICrsService crsService,
-            IStationService stationService,
-            IUpdateCheckService updateCheckService) {
+            IUpdateCheckService updateCheckService)
+        {
+            // ✅ FIRST — absolute earliest hook into the request
+            app.Use(async (context, next) =>
+            {
+                Console.WriteLine(
+                    $"STDOUT HIT {context.Request.Method} {context.Request.Path} TraceId={context.TraceIdentifier}"
+                );
+
+                logger.LogInformation(
+                    "APPLOG HIT {Method} {Path} TraceId={TraceId}",
+                    context.Request.Method,
+                    context.Request.Path,
+                    context.TraceIdentifier
+                );
+
+                context.Response.OnStarting(() =>
+                {
+                    Console.WriteLine($"STDOUT RESP {context.Response.StatusCode} TraceId={context.TraceIdentifier}");
+                    return Task.CompletedTask;
+                });
+
+                await next();
+            });
+
             logger.LogInformation("Configuring Huxley 2 web API application");
 
-            logger.LogInformation("endPoint " + endPoint + "userName " + userName);
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
+            if (env.IsDevelopment())
+                logger.LogInformation("OJP endpoint {Endpoint} user {User}", _endPoint, _userName);
 
             app.UseResponseCompression();
-            if (env.IsDevelopment()) {
+
+            if (env.IsDevelopment())
+            {
                 app.UseDeveloperExceptionPage();
             }
-            app.UseHttpsRedirection();
+            else
+            {
+                app.UseExceptionHandler(errorApp =>
+                {
+                    errorApp.Run(async context =>
+                    {
+                        var traceId = context.TraceIdentifier;
+
+                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                        context.Response.ContentType = "application/json";
+
+                        var payload = new ApiError
+                        {
+                            Code = "INTERNAL_ERROR",
+                            Message = "An unexpected error occurred. Please try again.",
+                            TraceId = traceId
+                        };
+
+                        await context.Response.WriteAsJsonAsync(payload);
+                    });
+                });
+
+                app.UseHttpsRedirection();
+            }
+
             app.UseStaticFiles();
             app.UseETagger();
+
             app.UseRouting();
-            // UseResponseCaching doesn't appear to be necessary to enable the ResponseCache attribute
-            // but it is required to use VaryByQueryKeys in the future so enable middleware to be safe
+
             app.UseResponseCaching();
 
             // CORS must be called after UseRouting and before UseEndpoints to function correctly
@@ -107,25 +199,29 @@ namespace Huxley2 {
             // https://docs.microsoft.com/en-us/aspnet/core/security/cors
             app.UseCors(config => config.AllowAnyOrigin());
 
-            app.UseEndpoints(endpoints => {
+            // API key middleware MUST run after UseRouting so endpoint metadata is available,
+            // and before UseEndpoints so it can block/allow.
+            app.UseMiddleware<ApiKeyMiddleware>();
+            app.UseMiddleware<AuthClassRateLimitMiddleware>();
+
+            app.UseEndpoints(endpoints =>
+            {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
             });
 
             logger.LogInformation("Huxley 2 web API application configured");
 
-            try {
-                logger.LogInformation("Loading CRS station codes from remote source");
-                await crsService.LoadCrsCodes();
-                await stationService.LoadStations();
-                if (_enableUpdateCheck) {
+            try
+            { 
+                if (_enableUpdateCheck)
+                {
                     logger.LogInformation("Checking for any available updates to Huxley");
-                    await updateCheckService.CheckForUpdates();
+                    updateCheckService.CheckForUpdates().GetAwaiter().GetResult();
                 }
-            } catch (Exception e) when (
-                  e is CrsServiceException ||
-                  e is UpdateCheckServiceException
-                  ) {
+            }
+            catch (UpdateCheckServiceException e)
+            {
                 logger.LogError(e, "Non-fatal startup failure");
             }
 

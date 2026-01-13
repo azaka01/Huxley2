@@ -6,6 +6,8 @@ namespace Huxley2.Interfaces
 {
     public interface IStationService
     {
+        bool IsReady { get; }
+
         IEnumerable<CrsStation> GetLondonTerminals();
         IEnumerable<CrsStation> GetStations(string? query);
         CrsStation? GetStationByCrsCode(string? query);

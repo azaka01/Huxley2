@@ -26,10 +26,22 @@ namespace Huxley2.Controllers {
         [Route("")]
         [Route("{query}")]
         [ProducesResponseType(typeof(IEnumerable<CrsStation>), StatusCodes.Status200OK)]
-        [ProducesDefaultResponseType]
-        public IEnumerable<CrsStation> Get([FromRoute] string? query) {
-            _logger.LogInformation($"Getting stations for query: {query}");
-            return _stationService.GetStations(query);
+        [ProducesResponseType(typeof(ApiError), StatusCodes.Status503ServiceUnavailable)]
+        public IActionResult Get([FromRoute] string? query)
+        {
+            _logger.LogInformation("Getting stations for query: {Query}", query);
+
+            if (!_stationService.IsReady)
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, new ApiError
+                {
+                    Code = "STATIONS_NOT_READY",
+                    Message = "Station data is still loading. Please retry shortly.",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+
+            return Ok(_stationService.GetStations(query));
         }
     }
 }
