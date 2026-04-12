@@ -1,5 +1,65 @@
 [
     {
+        "Latitude": 52.4463,
+        "StationName": "Moseley Village",
+        "CrsCode": "MOV",
+        "Longitude": -1.8856
+    },
+    {
+        "Latitude": 52.4392,
+        "StationName": "Kings Heath",
+        "CrsCode": "KIH",
+        "Longitude": -1.893
+    },
+    {
+        "Latitude": 52.4299,
+        "StationName": "Pineapple Road",
+        "CrsCode": "PIR",
+        "Longitude": -1.908
+    },
+    {
+        "Latitude": 52.5822,
+        "StationName": "Willenhall",
+        "CrsCode": "WIA",
+        "Longitude": -2.0534
+    },
+    {
+        "Latitude": 52.5751,
+        "StationName": "Darlaston",
+        "CrsCode": "DAS",
+        "Longitude": -2.0188
+    },
+    {
+        "Latitude": 51.4715,
+        "StationName": "Heathrow Coach Station",
+        "CrsCode": "HTR",
+        "Longitude": -0.4532
+    },
+    {
+        "Latitude": 51.4715,
+        "StationName": "Heathrow Terminal 2 (Bus)",
+        "CrsCode": "HWA",
+        "Longitude": -0.4532
+    },
+    {
+        "Latitude": 51.470833,
+        "StationName": "Heathrow Terminal 3 (Bus)",
+        "CrsCode": "HWE",
+        "Longitude": -0.46
+    },
+    {
+        "Latitude": 51.459722,
+        "StationName": "Heathrow Terminal 4 (Bus)",
+        "CrsCode": "HWF",
+        "Longitude": -0.4475
+    },
+    {
+        "Latitude": 51.47278,
+        "StationName": "Heathrow Terminal 5 Bus",
+        "CrsCode": "HWX",
+        "Longitude": -0.48756
+    },
+    {
         "Latitude": 51.426667,
         "StationName": "Reading Green Park",
         "CrsCode": "RGP",
@@ -29,7 +89,6 @@
         "Longitude": 0.114764,
         "CrsCode": "BGV"
     },
-    
     {
         "Latitude": 51.5061,
         "StationName": "Canary Wharf (Elizabeth Line)",
