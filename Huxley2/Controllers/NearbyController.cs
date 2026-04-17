@@ -52,7 +52,7 @@ namespace Huxley2.Controllers
             [FromQuery] bool expand = false)
         {
             // Validate lat
-            if (string.IsNullOrWhiteSpace(lat) || !double.TryParse(lat, out var latValue))
+            if (string.IsNullOrWhiteSpace(lat) || !double.TryParse(lat, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var latValue))
             {
                 return BadRequest(new ApiError
                 {
@@ -62,13 +62,33 @@ namespace Huxley2.Controllers
                 });
             }
 
+            if (latValue < -90 || latValue > 90)
+            {
+                return BadRequest(new ApiError
+                {
+                    Code = "INVALID_PARAMETER",
+                    Message = "The 'lat' parameter must be between -90 and 90.",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+
             // Validate lng
-            if (string.IsNullOrWhiteSpace(lng) || !double.TryParse(lng, out var lngValue))
+            if (string.IsNullOrWhiteSpace(lng) || !double.TryParse(lng, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var lngValue))
             {
                 return BadRequest(new ApiError
                 {
                     Code = "INVALID_PARAMETER",
                     Message = "The 'lng' parameter is required and must be a valid numeric value.",
+                    TraceId = HttpContext.TraceIdentifier
+                });
+            }
+
+            if (lngValue < -180 || lngValue > 180)
+            {
+                return BadRequest(new ApiError
+                {
+                    Code = "INVALID_PARAMETER",
+                    Message = "The 'lng' parameter must be between -180 and 180.",
                     TraceId = HttpContext.TraceIdentifier
                 });
             }
@@ -87,18 +107,28 @@ namespace Huxley2.Controllers
                         TraceId = HttpContext.TraceIdentifier
                     });
                 }
+
+                if (_stationService.GetStationByCrsCode(destinationCrs) == null)
+                {
+                    return BadRequest(new ApiError
+                    {
+                        Code = "INVALID_PARAMETER",
+                        Message = $"The destination station '{destinationCrs}' was not found.",
+                        TraceId = HttpContext.TraceIdentifier
+                    });
+                }
             }
 
             // Validate optional radius
             double radiusValue = 3;
             if (!string.IsNullOrWhiteSpace(radius))
             {
-                if (!double.TryParse(radius, out radiusValue) || radiusValue <= 0)
+                if (!double.TryParse(radius, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out radiusValue) || radiusValue <= 0 || radiusValue > 50)
                 {
                     return BadRequest(new ApiError
                     {
                         Code = "INVALID_PARAMETER",
-                        Message = "The 'radius' parameter must be a positive numeric value.",
+                        Message = "The 'radius' parameter must be a positive number up to 50.",
                         TraceId = HttpContext.TraceIdentifier
                     });
                 }
@@ -108,12 +138,12 @@ namespace Huxley2.Controllers
             int maxStationsValue = 5;
             if (!string.IsNullOrWhiteSpace(maxStations))
             {
-                if (!int.TryParse(maxStations, out maxStationsValue) || maxStationsValue <= 0)
+                if (!int.TryParse(maxStations, out maxStationsValue) || maxStationsValue <= 0 || maxStationsValue > 20)
                 {
                     return BadRequest(new ApiError
                     {
                         Code = "INVALID_PARAMETER",
-                        Message = "The 'maxStations' parameter must be a positive integer.",
+                        Message = "The 'maxStations' parameter must be a positive integer up to 20.",
                         TraceId = HttpContext.TraceIdentifier
                     });
                 }
@@ -123,12 +153,12 @@ namespace Huxley2.Controllers
             int numRowsValue = 4;
             if (!string.IsNullOrWhiteSpace(numRows))
             {
-                if (!int.TryParse(numRows, out numRowsValue) || numRowsValue <= 0)
+                if (!int.TryParse(numRows, out numRowsValue) || numRowsValue <= 0 || numRowsValue > 150)
                 {
                     return BadRequest(new ApiError
                     {
                         Code = "INVALID_PARAMETER",
-                        Message = "The 'numRows' parameter must be a positive integer.",
+                        Message = "The 'numRows' parameter must be a positive integer up to 150.",
                         TraceId = HttpContext.TraceIdentifier
                     });
                 }
@@ -192,6 +222,8 @@ namespace Huxley2.Controllers
                     {
                         StationName = station.StationName,
                         CrsCode = station.CrsCode,
+                        Latitude = station.Latitude,
+                        Longitude = station.Longitude,
                         DistanceMiles = station.DistanceMiles,
                         Services = services
                     });
@@ -205,6 +237,8 @@ namespace Huxley2.Controllers
                     {
                         StationName = station.StationName,
                         CrsCode = station.CrsCode,
+                        Latitude = station.Latitude,
+                        Longitude = station.Longitude,
                         DistanceMiles = station.DistanceMiles,
                         Services = Array.Empty<object>()
                     });

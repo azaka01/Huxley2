@@ -1,5 +1,3 @@
-using OpenLDBWS;
-
 namespace Huxley2.Models
 {
     public class NearbyStationResponse
@@ -7,6 +5,10 @@ namespace Huxley2.Models
         public string StationName { get; set; } = string.Empty;
 
         public string CrsCode { get; set; } = string.Empty;
+
+        public double Latitude { get; set; }
+
+        public double Longitude { get; set; }
 
         /// <summary>
         /// Distance from the provided GPS coordinates in miles, rounded to 1 decimal place.

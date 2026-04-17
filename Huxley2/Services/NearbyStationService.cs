@@ -33,6 +33,8 @@ namespace Huxley2.Services
                 {
                     StationName = x.Station.StationName,
                     CrsCode = x.Station.CrsCode,
+                    Latitude = x.Station.Latitude,
+                    Longitude = x.Station.Longitude,
                     DistanceMiles = Math.Round(x.Distance, 1)
                 })
                 .ToList();
