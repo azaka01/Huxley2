@@ -9,11 +9,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Huxley2.Security;
 
 namespace Huxley2.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [RequireApiKey]
     public class DelaysController : ControllerBase
     {
         private readonly ILogger<DelaysController> _logger;

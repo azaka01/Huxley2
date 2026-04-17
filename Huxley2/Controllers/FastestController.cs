@@ -10,11 +10,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using OpenLDBWS;
+using Huxley2.Security;
 
 namespace Huxley2.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [RequireApiKey]
     public class FastestController : ControllerBase
     {
         private readonly ILogger<FastestController> _logger;
