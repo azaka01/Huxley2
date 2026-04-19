@@ -1,4 +1,36 @@
-using Huxley2.Exceptions;using Huxley2.Interfaces;using Huxley2.Models;using Huxley2.Soap;using Microsoft.Extensions.Logging;using NreOJPService;using System;using System.Collections.Generic;using System.Diagnostics;using System.ServiceModel;using System.Threading.Tasks;namespace Huxley2.Services{    public class JourneyPlannerService : IJourneyPlannerService    {        private readonly ILogger<JourneyPlannerService> _logger;        private readonly IMapperService _mapperService;        private readonly IStationService _stationService;        private readonly jpservices _jpClient;        public JourneyPlannerService(            ILogger<JourneyPlannerService> logger,            IStationService stationService,            IMapperService mapperService,            jpservices jpClient        )        {            _logger = logger;            _stationService = stationService;            _mapperService = mapperService;            _jpClient = jpClient;        }
+using Huxley2.Exceptions;
+using Huxley2.Interfaces;
+using Huxley2.Models;
+using Huxley2.Soap;
+using Microsoft.Extensions.Logging;
+using NreOJPService;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.ServiceModel;
+using System.Threading.Tasks;
+
+namespace Huxley2.Services
+{
+    public class JourneyPlannerService : IJourneyPlannerService
+    {
+        private readonly ILogger<JourneyPlannerService> _logger;
+        private readonly IMapperService _mapperService;
+        private readonly IStationService _stationService;
+        private readonly jpservices _jpClient;
+
+        public JourneyPlannerService(
+            ILogger<JourneyPlannerService> logger,
+            IStationService stationService,
+            IMapperService mapperService,
+            jpservices jpClient
+        )
+        {
+            _logger = logger;
+            _stationService = stationService;
+            _mapperService = mapperService;
+            _jpClient = jpClient;
+        }
 
         async Task<OjpCallingPointsResponse> IJourneyPlannerService.GetJourneyCallingPointsAsync(JourneyCallingPointsRequest request)
         {
@@ -198,6 +230,21 @@ using Huxley2.Exceptions;using Huxley2.Interfaces;using Huxley2.Models;using 
                         "RealtimeJourneyPlanResponse was null and no SOAP fault was captured");
                 }
 
+                // Check for non-Ok response status (e.g. JourneyPlanBadSearchStatus, NoJourneysFound)
+                if (rtResponse.response != ResponseEnum.Ok)
+                {
+                    _logger.LogWarning(
+                        "OJP SOAP non-Ok response. Response={Response}, Details={Details}",
+                        rtResponse.response,
+                        rtResponse.responseDetails);
+
+                    throw new OjpFaultException(
+                        operation: "RealtimeJourneyPlan",
+                        response: rtResponse.response.ToString(),
+                        responseDetails: rtResponse.responseDetails
+                    );
+                }
+
                 var outwardJourneys = new List<OjpJourney>();
 
                 if (rtResponse.outwardJourney != null)
@@ -367,4 +414,6 @@ using Huxley2.Exceptions;using Huxley2.Interfaces;using Huxley2.Models;using 
                 throw;
             }
 
-        }    }}
+        }
+    }
+}

@@ -6,11 +6,13 @@ using Huxley2.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Huxley2.Security;
 
 namespace Huxley2.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [RequireApiKey]
     public class CrsController : ControllerBase
     {
         private readonly ILogger<CrsController> _logger;

@@ -350,3 +350,8 @@ out/
 
 *-settings.json
 *-settings-backup.json
+
+# Azure deployment settings with credentials
+test-settings.json
+prod-settings.json
+Huxley2/test-settings.json

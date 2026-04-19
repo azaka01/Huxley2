@@ -106,18 +106,30 @@ namespace Huxley2.Soap
             {
                 var doc = XDocument.Parse(xml, LoadOptions.PreserveWhitespace);
 
-                // Find SOAP Fault (namespace-agnostic)
+                // First try: standard SOAP Fault/detail structure
                 var fault = doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Fault");
-                if (fault == null) return null;
+                if (fault != null)
+                {
+                    var detail = fault.Descendants().FirstOrDefault(e => e.Name.LocalName == "detail");
+                    if (detail != null)
+                    {
+                        var el = detail.Descendants().FirstOrDefault(e =>
+                            e.Name.LocalName.Equals(localTagName, StringComparison.Ordinal));
+                        if (el?.Value != null) return el.Value.Trim();
+                    }
+                }
 
-                // Fault/detail is the usual location for custom faults
-                var detail = fault.Descendants().FirstOrDefault(e => e.Name.LocalName == "detail");
-                if (detail == null) return null;
+                // Second try: OJP-style fault directly in SOAP Body (e.g. RealtimeJourneyPlanFault/response)
+                var ojpFault = doc.Descendants().FirstOrDefault(e =>
+                    e.Name.LocalName.EndsWith("Fault", StringComparison.Ordinal));
+                if (ojpFault != null)
+                {
+                    var el = ojpFault.Descendants().FirstOrDefault(e =>
+                        e.Name.LocalName.Equals(localTagName, StringComparison.Ordinal));
+                    if (el?.Value != null) return el.Value.Trim();
+                }
 
-                var el = detail.Descendants().FirstOrDefault(e =>
-                    e.Name.LocalName.Equals(localTagName, StringComparison.Ordinal));
-
-                return el?.Value?.Trim();
+                return null;
             }
             catch (XmlException)
             {

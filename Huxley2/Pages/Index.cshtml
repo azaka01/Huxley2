@@ -34,9 +34,9 @@
             <abbr title="Simple Object Access Protocol">SOAP</abbr>
         </a> <abbr title="Extensible Markup Language">XML</abbr>
         <abbr title="Application Programming Interface">API</abbr>
-        (called <a href="https://www.nationalrail.co.uk/100296.aspx">Darwin</a>).
+        (called <a href="https://www.nationalrail.co.uk/developers/">Darwin</a>).
         It supports both the Public Version (PV) and the Staff Version (SV).
-        It's built with ASP.NET Core <abbr title="Long Term Support">LTS</abbr>, C# 8.0 and lots of abbreviations!
+        It's built with ASP.NET Core <abbr title="Long Term Support">LTS</abbr>, C# 10 and lots of abbreviations!
     </p>
     <p>
         The primary purpose of Huxley 2 is to allow easy use of the LDB API from browser-based client-side
@@ -57,7 +57,10 @@
         </div>
     }
      <p>
-        A fork of Huxley2 which adds mobile friendly data to use with apps and services
+        A fork of Huxley2 which adds mobile friendly data to use with apps and services.
+        Significant improvements have been made by the On Rails fork, including station locations,
+        nearby services, journey planning, API key authentication, and improved error handling.
+        See the update notes below for details.
     </p>
 </div>
 
@@ -76,6 +79,11 @@
                     <li>
                         <a href="#access-tokens">
                             Access Tokens
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#on-rails-updates">
+                            On Rails Fork Updates
                         </a>
                     </li>
                     <li>
@@ -166,8 +174,38 @@
                                 </a>
                             </li>
                             <li>
+                                <a href="#stations">
+                                    Station Locations
+                                </a>
+                            </li>
+                            <li>
                                 <a href="#service">
                                     Service Details
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#nearby">
+                                    Nearby Services
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#ojp">
+                                    Journey Planner
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#auth">
+                                    Authentication
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#credentials">
+                                    Credentials &amp; Access
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#contact">
+                                    Contact &amp; Hosted Service
                                 </a>
                             </li>
                         </ul>
@@ -196,7 +234,7 @@
                                 You can now use Huxley on any platform (pun intended)
                             </li>
                             <li>
-                                .NET 6.0 LTS supported until 2024-11-08
+                                .NET 6.0 LTS
                             </li>
                         </ul>
                     </li>
@@ -233,8 +271,9 @@
 
                 <h2 id="quick-start">Quick Start</h2>
                 <p>
-                    Follow these steps to get going:
+                    There are two ways to use this service:
                 </p>
+                <h4>Option 1: Self-hosted instance</h4>
                 <ul>
                     <li>
                         Get an API access token from NRE
@@ -242,14 +281,34 @@
                         or <a href="http://openldbsv.nationalrail.co.uk/self-signup/register">staff</a> or both)
                     </li>
                     <li>
-                        Append <code>accessToken=TOKEN</code> to the URL for every request
+                        Either append <code>accessToken=TOKEN</code> to the URL for every request,
+                        or configure <code>DarwinAccessToken</code> in your app settings so the server handles it
+                    </li>
+                    <li>
+                        For journey planning, you will also need OJP credentials from NRE
+                        (see <a href="#credentials">Credentials &amp; Access</a>)
                     </li>
                 </ul>
-                <p>
-                    If you don't want to append the token then read on.
-                </p>
+                <h4>Option 2: Use the On Rails hosted service</h4>
+                <ul>
+                    <li>
+                        <a href="mailto:az@intsoftdev.com">Contact us</a> for API keys and access to the hosted service
+                    </li>
+                    <li>
+                        Include the <code>x-api-key</code> header in all requests
+                        (see <a href="#auth">Authentication</a>)
+                    </li>
+                    <li>
+                        No NRE credentials needed — the hosted service handles upstream authentication
+                    </li>
+                </ul>
 
-<h3 id="v2.1-changes">2.1 Update</h2>
+<h2 id="on-rails-updates">On Rails Fork Updates</h2>
+<p>
+    The following updates have been made by the On Rails fork of the original Huxley2 project.
+</p>
+
+<h3 id="v2.1-changes">2.1 Update</h3>
 <ul>
     <li>
         Added Stations controller to return all national rail stations with geo-coordinates.
@@ -259,7 +318,7 @@
     </li>
  </ul>
 
- <h3 id="v2.3-changes">2.3 Update</h2>
+ <h3 id="v2.3-changes">2.3 Update</h3>
 <ul>
     <li>
         Added online journey planner to access the NRE OJP service through a REST API.
@@ -283,6 +342,25 @@
     </p>
     </li>
  </ul>
+
+ <h3 id="v2.5-changes">2.5 Update</h3>
+<ul>
+    <li>
+        <strong>Nearby Services endpoint</strong> — new <code>GET /api/nearby</code> endpoint that returns real-time train services from stations near a GPS location in a single call.
+    </li>
+    <li>
+        <strong>API Key Authentication</strong> — all endpoints now support <code>x-api-key</code> header authentication with Off/Grace/Enforce modes.
+    </li>
+    <li>
+        <strong>Improved OJP error handling</strong> — comprehensive mapping of all OJP error codes to appropriate HTTP status codes with user-friendly messages.
+    </li>
+    <li>
+        <strong>OJP Postcode support confirmed</strong> — investigation confirmed the OJP API supports postcode-based journey planning (implementation planned for a future release).
+    </li>
+    <li>
+        Station responses now include latitude and longitude for map display.
+    </li>
+</ul>
 
                 <h2 id="api-endpoints">API Endpoints</h2>
                 <p>
@@ -444,7 +522,7 @@
                     Additionally, this action will accept <code>LON</code> or <code>London</code> as a filter CRS to
                     find trains going to or coming from
                     any of the <a
-                        href="https://www.nationalrail.co.uk/times_fares/ticket_types/46587.aspx#terminals">London
+                        href="https://en.wikipedia.org/wiki/London_station_group">London
                         Terminals</a>.
                 </p>
                 <p>
@@ -549,7 +627,7 @@
         <a href="/crs/london terminals">/crs/london terminals</a>
     </code> returns all codes in the <a href="https://en.wikipedia.org/wiki/London_station_group">London station group</a>
 </p>
-<h3 id="crs">Station Locations</h3>
+<h3 id="stations">Station Locations</h3>
 <p><abbr title="Station Locations">Station</abbr> locations are available from the following endpoint:</p>
 <p>
     <code>
@@ -612,8 +690,127 @@
 <h3 id="ojp">Journey Planner</h3>
 <p>
     <code>
-        <a href="/api/planner/WTN/GLC/2024-11-07T06:25:03?itemChoiceType=1&enquiryType=0">/api/planner/{CRS|Origin}/{CRS|Destination}/{String|DateTime}?{Int|ItemChoiceType}&{Int|enquiryType}&{CRS|via/avoid}&{Bool|directTrains}</a>
+        <a href="/api/planner/WTN/GLC/2026-06-01T08:00:00?itemChoiceType=1&enquiryType=0">/api/planner/{CRS|Origin}/{CRS|Destination}/{String|DateTime}?{Int|ItemChoiceType}&{Int|enquiryType}&{CRS|via/avoid}&{Bool|directTrains}</a>
     </code>
+</p>
+
+<h3 id="nearby">Nearby Services</h3>
+<p>
+    Get real-time train services from stations near a GPS location in a single call.
+    Returns stations ordered by distance with live departure information.
+</p>
+<p>
+    <code>
+        <a href="/api/nearby?lat=51.5031&lng=-0.1132&maxStations=3">/api/nearby?lat={latitude}&amp;lng={longitude}</a>
+    </code>
+</p>
+<h5>Parameters:</h5>
+<ul>
+    <li><code>lat</code> (required) — Latitude, -90 to 90</li>
+    <li><code>lng</code> (required) — Longitude, -180 to 180</li>
+    <li><code>destination</code> (optional) — CRS code to filter services heading to that destination</li>
+    <li><code>radius</code> (optional, default 3, max 50) — Search radius in miles</li>
+    <li><code>maxStations</code> (optional, default 5, max 20) — Maximum number of stations to return</li>
+    <li><code>numRows</code> (optional, default 4, max 150) — Number of services per station</li>
+    <li><code>expand</code> (optional, default false) — Include calling points data for duration/arrival times</li>
+</ul>
+<h5>Examples:</h5>
+<ul>
+    <li>
+        Nearby stations with services near London Waterloo:
+        <code><a href="/api/nearby?lat=51.5031&lng=-0.1132">/api/nearby?lat=51.5031&amp;lng=-0.1132</a></code>
+    </li>
+    <li>
+        With expanded calling points:
+        <code><a href="/api/nearby?lat=51.5031&lng=-0.1132&maxStations=2&expand=true">/api/nearby?lat=51.5031&amp;lng=-0.1132&amp;maxStations=2&amp;expand=true</a></code>
+    </li>
+    <li>
+        Filtered by destination:
+        <code><a href="/api/nearby?lat=51.5031&lng=-0.1132&destination=CBG">/api/nearby?lat=51.5031&amp;lng=-0.1132&amp;destination=CBG</a></code>
+    </li>
+</ul>
+<p>
+    Each station in the response includes <code>stationName</code>, <code>crsCode</code>, <code>latitude</code>, <code>longitude</code>,
+    <code>distanceMiles</code>, and a <code>services</code> array matching the existing station board response format.
+</p>
+
+<h3 id="auth">Authentication</h3>
+<p>
+    All endpoints support API key authentication via the <code>x-api-key</code> request header.
+    The server supports three modes configured via the <code>Security__ApiKeyMode</code> app setting:
+</p>
+<ul>
+    <li><strong>Off</strong> — No authentication required (default)</li>
+    <li><strong>Grace</strong> — Unauthenticated requests are logged but allowed through</li>
+    <li><strong>Enforce</strong> — Unauthenticated requests receive 401 (missing key) or 403 (invalid key)</li>
+</ul>
+<p>
+    API keys are configured via <code>Security__ApiKeys__0</code>, <code>Security__ApiKeys__1</code>, etc. in app settings.
+    Multiple keys are supported for key rotation.
+</p>
+
+<h3 id="credentials">Credentials &amp; Access</h3>
+<p>
+    Different API features require different credentials:
+</p>
+<ul>
+    <li>
+        <strong>Station Boards (Departures, Arrivals, etc.)</strong> — Requires an NRE Darwin access token.
+        Register for a <a href="https://realtime.nationalrail.co.uk/OpenLDBWSRegistration/Registration">public</a>
+        or <a href="http://openldbsv.nationalrail.co.uk/self-signup/register">staff</a> token.
+        Pass as <code>accessToken</code> query parameter, or configure <code>DarwinAccessToken</code> in app settings.
+    </li>
+    <li>
+        <strong>Journey Planner</strong> — Requires a separate OJP username and password from NRE.
+        Configure <code>ojpEndpoint</code>, <code>ojpUsername</code>, and <code>ojpPassword</code> in app settings.
+    </li>
+    <li>
+        <strong>Nearby Services</strong> — Uses the server-configured <code>DarwinAccessToken</code> for upstream calls.
+        No client-side token needed.
+    </li>
+    <li>
+        <strong>Station Locations &amp; CRS Codes</strong> — No external credentials required (local data).
+    </li>
+</ul>
+
+<h3 id="contact">Contact &amp; Hosted Service</h3>
+<p>
+    The On Rails proxy service is available as a hosted API for third-party mobile applications.
+    Integrated Software Development Ltd is the licensed service provider &mdash; third-party apps connect
+    to our API rather than accessing NRE services directly. OJP credentials are never exposed to
+    end applications, and no raw feeds are redistributed.
+</p>
+<p>
+    The hosted service provides:
+</p>
+<ul>
+    <li>Real-time departure and arrival boards</li>
+    <li>Journey planning (powered by the NRE OJP service)</li>
+    <li>Nearby station services with GPS-based discovery</li>
+    <li>UK station locations with geo-coordinates</li>
+    <li>API key authentication and rate limiting</li>
+</ul>
+<p>
+    A Kotlin Multiplatform SDK for iOS and Android is available under a commercial licence.
+</p>
+<p>
+    For API keys, SDK access, and integration support:
+    <a href="mailto:az@intsoftdev.com">az@intsoftdev.com</a>
+</p>
+<h4>Journey Planner Licensing</h4>
+<p>
+    The On Rails hosted service provides journey planning results via our API to third-party mobile applications
+    under the following terms:
+</p>
+<ul>
+    <li>Integrated Software Development Ltd remains the OJP licence holder</li>
+    <li>OJP credentials are not exposed directly to end applications</li>
+    <li>No raw OJP feeds are redistributed</li>
+    <li>The service is used for journey planning only (no ticket retailing functionality)</li>
+</ul>
+<p>
+    Third-party mobile applications act as clients of the On Rails service rather than accessing NRE services directly.
+    <a href="mailto:az@intsoftdev.com">Contact us</a> to discuss integration.
 </p>
 
 <h2 id="source-code">Source Code</h2>

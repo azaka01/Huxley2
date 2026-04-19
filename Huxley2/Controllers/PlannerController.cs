@@ -239,30 +239,75 @@ namespace Huxley2.Controllers
         {
             return faultCode switch
             {
-                // Applies to either operation (you’ve already seen it on CallingPoints)
+                // Date/time validation errors → 400
                 "OutwardDateTimeInThePast" => (
                     StatusCodes.Status400BadRequest,
                     "The time you selected is in the past. Please choose a future time and try again."
                 ),
-
-                // JourneyPlan faults
                 "ReturnDateTimeBeforeOutwardDate" => (
                     StatusCodes.Status400BadRequest,
                     "Your return date/time must be after your outward date/time. Please update your selection and try again."
                 ),
+                "ReturnDateTimeInThePast" => (
+                    StatusCodes.Status400BadRequest,
+                    "The return time is in the past. Please choose a future time."
+                ),
 
-                // CallingPoints faults
+                // Station validation errors → 400
+                "StationDoesNotExist" => (
+                    StatusCodes.Status400BadRequest,
+                    "The station code provided is not recognised. Please check and try again."
+                ),
+                "InvalidViaStation" => (StatusCodes.Status400BadRequest, "The ‘via’ station is not a valid National Rail station."),
+                "ViaStationSameAsFrom" => (StatusCodes.Status400BadRequest, "The ‘via’ station cannot be the same as the origin station."),
+                "ViaStationSameAsTo" => (StatusCodes.Status400BadRequest, "The ‘via’ station cannot be the same as the destination station."),
+                "InvalidAvoidStation" => (StatusCodes.Status400BadRequest, "The ‘avoid’ station is not a valid National Rail station."),
+                "AvoidStationSameAsFrom" => (StatusCodes.Status400BadRequest, "The ‘avoid’ station cannot be the same as the origin station."),
+                "AvoidStationSameAsTo" => (StatusCodes.Status400BadRequest, "The ‘avoid’ station cannot be the same as the destination station."),
+                "InvalidExcludeStation" => (StatusCodes.Status400BadRequest, "The ‘exclude’ station is not a valid National Rail station."),
+                "ExcludeStationSameAsFrom" => (StatusCodes.Status400BadRequest, "The ‘exclude’ station cannot be the same as the origin station."),
+                "ExcludeStationSameAsTo" => (StatusCodes.Status400BadRequest, "The ‘exclude’ station cannot be the same as the destination station."),
+                "InvalidInterchangeStation" => (StatusCodes.Status400BadRequest, "The ‘interchange’ station is not a valid National Rail station."),
+                "InterchangeStationSameAsFrom" => (StatusCodes.Status400BadRequest, "The ‘interchange’ station cannot be the same as the origin station."),
+                "InterchangeStationSameAsTo" => (StatusCodes.Status400BadRequest, "The ‘interchange’ station cannot be the same as the destination station."),
+                "InvalidIncludeStation" => (StatusCodes.Status400BadRequest, "The ‘include’ station is not a valid National Rail station."),
+                "IncludeStationSameAsFrom" => (StatusCodes.Status400BadRequest, "The ‘include’ station cannot be the same as the origin station."),
+
+                // Postcode errors → 400/404
+                "PostcodeMustBeProvided" => (StatusCodes.Status400BadRequest, "A postcode must be provided for either the origin or destination."),
+                "PostcodeDoesNotHaveAnyStations" => (StatusCodes.Status404NotFound, "No stations were found near the postcode provided."),
+                "PostcodeNotAllowedForFromAndTo" => (StatusCodes.Status400BadRequest, "Postcodes cannot be used for both origin and destination. One must be a station."),
+                "InvalidPostcode" => (StatusCodes.Status400BadRequest, "The postcode provided is not valid."),
+
+                // Other validation → 400
+                "UnknownRailcardCode" => (StatusCodes.Status400BadRequest, "The railcard code provided is not recognised."),
+                "TrainOperatingCompanyNotFound" => (StatusCodes.Status400BadRequest, "The train operator code provided is not recognised."),
+
+                // No results found → 404
+                "NoJourneysFound" => (
+                    StatusCodes.Status404NotFound,
+                    "No journeys were found for your request. Please check your dates, times, or route and try again."
+                ),
+                "JourneyPlanBadSearchStatus" => (
+                    StatusCodes.Status404NotFound,
+                    "No services were found for the journey you requested. Please check your dates, times, or route and try again."
+                ),
                 "MatchingJourneyNotFound" when isCallingPoints => (
                     StatusCodes.Status404NotFound,
                     "We couldn’t find a matching journey for the selected route and times. Please check your details and try again."
                 ),
 
-                // JourneyPlan: treat as "no services"
-                "JourneyPlanBadSearchStatus" => (
-                    StatusCodes.Status404NotFound,
-                    "No services were found for the journey you requested. Please check your dates, times, or route and try again."
+                // Upstream/timeout errors → 502/504
+                "JourneyPlanTimeout" or "DepartureBoardTimeout" => (
+                    StatusCodes.Status504GatewayTimeout,
+                    "The journey planner is taking too long to respond. Please try again."
+                ),
+                "JourneyPlanError" or "JourneyPlanNrsError" or "JourneyPlanNrsBadStatus" or "OJPOtherError" => (
+                    StatusCodes.Status502BadGateway,
+                    "The journey planner encountered an error. Please try again."
                 ),
 
+                // Default fallback → 502
                 _ => (
                     StatusCodes.Status502BadGateway,
                     isCallingPoints

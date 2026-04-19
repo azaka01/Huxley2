@@ -67,6 +67,26 @@ namespace Huxley2.Security
                 return Task.CompletedTask;
             });
 
+            try
+            {
+                await InvokeCore(context, opts, mode, path, traceId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "AUTH_INTERNAL_ERROR Unhandled exception during API key validation path={Path} traceId={TraceId}",
+                    path, traceId);
+
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    await context.Response.WriteAsJsonAsync(new { code = "AUTH_INTERNAL_ERROR", traceId });
+                }
+            }
+        }
+
+        private async Task InvokeCore(HttpContext context, ApiKeyOptions opts, ApiKeyAuthMode mode, string path, string traceId)
+        {
             var endpoint = context.GetEndpoint();
             var requiresKey = endpoint?.Metadata.GetMetadata<RequireApiKeyAttribute>() is not null;
 
@@ -93,6 +113,10 @@ namespace Huxley2.Security
 
             if (!hasKeyHeader)
             {
+                // Grace period: log unauthenticated requests but allow them through.
+                // Keep grace period active until iOS/Android app versions with API key
+                // headers (KMP SDK centralised header) have sufficient adoption on both
+                // the App Store and Google Play Store. Then switch to Enforce mode.
                 if (mode == ApiKeyAuthMode.Grace)
                 {
                     context.Items["ApiKeyAuthClass"] = ApiKeyAuthClasses.Legacy;

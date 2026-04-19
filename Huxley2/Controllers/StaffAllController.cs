@@ -10,11 +10,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using OpenLDBSVWS;
+using Huxley2.Security;
 
 namespace Huxley2.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [RequireApiKey]
     public class StaffAllController : ControllerBase
     {
         private readonly ILogger<StaffAllController> _logger;
