@@ -2,7 +2,7 @@
 
 A mobile friendly JSON REST proxy for the GB railway Live Departure Boards SOAP API.
 
-Forked from the [Huxley2](https://github.com/jpsingleton/Huxley2) project. The original Huxley 2 is considered feature-complete by its author. This fork by Integrated Software Development Ltd continues active development with significant improvements including station locations, nearby services, journey planning, API key authentication, and improved error handling.
+Forked from the [Huxley2](https://github.com/jpsingleton/Huxley2) project. The original Huxley 2 is considered feature-complete by its author. This fork by Integrated Software Development Ltd continues active development on the `dev` branch with significant improvements including station locations, nearby services, journey planning, API key authentication, and improved error handling.
 
 [![Buy me a tree!](Huxley2/wwwroot/img/buy-me-a-tree.svg)](https://ecologi.com/unitsetsoftware)
 
