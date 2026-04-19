@@ -191,8 +191,13 @@ namespace Huxley2.Controllers
 
                     if (destinationCrs != null && board is StationBoardWithDetails boardWithDetails)
                     {
-                        // Filter services by destination calling points
-                        var matchingServices = (boardWithDetails.trainServices ?? Array.Empty<ServiceItemWithCallingPoints>())
+                        // Filter services by destination calling points (trains + buses + ferries)
+                        var allServices = new List<ServiceItemWithCallingPoints>();
+                        if (boardWithDetails.trainServices != null) allServices.AddRange(boardWithDetails.trainServices);
+                        if (boardWithDetails.busServices != null) allServices.AddRange(boardWithDetails.busServices);
+                        if (boardWithDetails.ferryServices != null) allServices.AddRange(boardWithDetails.ferryServices);
+
+                        var matchingServices = allServices
                             .Where(s => HasDestinationInCallingPoints(s, destinationCrs))
                             .Cast<object>()
                             .ToArray();
@@ -207,11 +212,19 @@ namespace Huxley2.Controllers
                     else if (board is StationBoardWithDetails expandedBoard)
                     {
                         // expand=true without destination filter — return all services with calling points
-                        services = expandedBoard.trainServices ?? Array.Empty<object>();
+                        var allServices = new List<object>();
+                        if (expandedBoard.trainServices != null) allServices.AddRange(expandedBoard.trainServices);
+                        if (expandedBoard.busServices != null) allServices.AddRange(expandedBoard.busServices);
+                        if (expandedBoard.ferryServices != null) allServices.AddRange(expandedBoard.ferryServices);
+                        services = allServices.ToArray();
                     }
                     else if (board is StationBoard stationBoard)
                     {
-                        services = stationBoard.trainServices ?? Array.Empty<object>();
+                        var allServices = new List<object>();
+                        if (stationBoard.trainServices != null) allServices.AddRange(stationBoard.trainServices);
+                        if (stationBoard.busServices != null) allServices.AddRange(stationBoard.busServices);
+                        if (stationBoard.ferryServices != null) allServices.AddRange(stationBoard.ferryServices);
+                        services = allServices.ToArray();
                     }
                     else
                     {
