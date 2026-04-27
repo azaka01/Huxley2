@@ -102,6 +102,12 @@ namespace Huxley2
             services.AddSingleton<IServiceDetailsService, ServiceDetailsService>();
             services.AddSingleton<IUpdateCheckService, UpdateCheckService>();
             services.AddSingleton<IJourneyPlannerService, JourneyPlannerService>();
+            services.AddSingleton<IPostcodeJourneyPlannerService>(sp =>
+                new PostcodeJourneyPlannerService(
+                    sp.GetRequiredService<ILoggerFactory>().CreateLogger<PostcodeJourneyPlannerService>(),
+                    sp.GetRequiredService<IStationService>(),
+                    sp.GetRequiredService<HttpClient>(),
+                    sp.GetRequiredService<IConfiguration>()));
             services.AddSingleton<INearbyStationService, NearbyStationService>();
             // Singleton HTTP client is best practice and is fine as we don't use authentication or cookies
             // No interface is available but we can mock it by passing in a fake handler to the constructor

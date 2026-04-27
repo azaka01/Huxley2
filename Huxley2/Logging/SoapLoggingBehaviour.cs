@@ -95,6 +95,14 @@ namespace Huxley2.Soap
                 ctx.Operation = "RealtimeCallingPoints";
                 ctx.FaultCode = ExtractFaultDetailValue(soap, "response");
                 ctx.FaultDetails = ExtractFaultDetailValue(soap, "responseDetails");
+                return;
+            }
+
+            if (soap.Contains("PostcodeJourneyPlanFault", StringComparison.Ordinal))
+            {
+                ctx.Operation = "PostcodeJourneyPlan";
+                ctx.FaultCode = ExtractFaultDetailValue(soap, "response");
+                ctx.FaultDetails = ExtractFaultDetailValue(soap, "responseDetails");
             }
         }
 

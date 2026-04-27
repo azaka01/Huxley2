@@ -35,5 +35,7 @@ namespace Huxley2.Interfaces
         OpenLDBSVWS.GetNextDeparturesWithDetailsRequest MapGetNextDeparturesWithDetailsStaffRequest(StationBoardRequest request);
         OpenLDBSVWS.GetFastestDeparturesRequest MapGetFastestDeparturesStaffRequest(StationBoardRequest request);
         OpenLDBSVWS.GetFastestDeparturesWithDetailsRequest MapGetFastestDeparturesWithDetailsStaffRequest(StationBoardRequest request);
+
+        PostcodeJourneyPlanRequest1 MapPostcodeJourneyPlanRequest(PostcodeJourneyPlannerRequest request, string postcode, string stationCrs, bool originIsPostcode);
     }
 }

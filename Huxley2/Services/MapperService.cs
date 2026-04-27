@@ -106,24 +106,7 @@ namespace Huxley2.Services {
 
         private static ItemChoiceType1 GetItemChoiceType(JourneyPlannerRequest request)
         {
-            if (request.ItemChoiceType == 0)
-            {
-                return ItemChoiceType1.arriveBy;
-            }
-            else if (request.ItemChoiceType == 1)
-            {
-                return ItemChoiceType1.departBy;
-            }
-            else if (request.ItemChoiceType == 2)
-            {
-                return ItemChoiceType1.firstTrainOfDay;
-            }
-            else if (request.ItemChoiceType == 3)
-            {
-                return ItemChoiceType1.lastTrainOfDay;
-            }
-            return ItemChoiceType1.arriveBy;
-
+            return GetItemChoiceType(request.ItemChoiceType);
         }
 
         private static RealtimeEnquiryType GetRealtimeEnquiryType(JourneyPlannerRequest request)
@@ -394,6 +377,49 @@ namespace Huxley2.Services {
                 time = _dateTimeService.LocalNow.AddMinutes(request.TimeOffset), // local - not UTC
                 timeWindow = (ushort)request.TimeWindow, // max 1440mins (24hrs)
                 services = STAFF_SERVICES_CODES,
+            };
+        }
+
+        public PostcodeJourneyPlanRequest1 MapPostcodeJourneyPlanRequest(
+            PostcodeJourneyPlannerRequest request, string postcode, string stationCrs, bool originIsPostcode) {
+
+            var origin = new PostcodeJourneyPlanOrigin();
+            var destination = new PostcodeJourneyPlanDestination();
+
+            if (originIsPostcode) {
+                origin.postcodeDetails = new PostcodeDetails { postcode = postcode };
+                destination.station = makeJPCrsCode(stationCrs);
+            } else {
+                origin.station = makeJPCrsCode(stationCrs);
+                destination.postcodeDetails = new PostcodeDetails { postcode = postcode };
+            }
+
+            var itemChoiceType = GetItemChoiceType(request.ItemChoiceType);
+
+            var soapRequest = new NreOJPService.PostcodeJourneyPlanRequest {
+                origin = origin,
+                destination = destination,
+                realtimeEnquiry = request.EnquiryType == 0
+                    ? RealtimeEnquiryType.STANDARD
+                    : RealtimeEnquiryType.CHECK_ALTERNATIVES,
+                outwardTime = new PostcodeJourneyPlanRequestOutwardTime {
+                    Item = request.PlannedTime,
+                    ItemElementName = itemChoiceType
+                },
+                directTrains = request.DirectTrains
+            };
+
+            return new PostcodeJourneyPlanRequest1 {
+                PostcodeJourneyPlanRequest = soapRequest
+            };
+        }
+
+        private static ItemChoiceType1 GetItemChoiceType(int itemChoiceType) {
+            return itemChoiceType switch {
+                1 => ItemChoiceType1.departBy,
+                2 => ItemChoiceType1.firstTrainOfDay,
+                3 => ItemChoiceType1.lastTrainOfDay,
+                _ => ItemChoiceType1.arriveBy
             };
         }
 
