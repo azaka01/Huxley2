@@ -1317,15 +1317,7 @@ namespace NreOJPService
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
         System.Threading.Tasks.Task<NreOJPService.RealtimeJourneyPlanResponse1> RealtimeJourneyPlanAsync(NreOJPService.RealtimeJourneyPlanRequest1 request);
         
-        // CODEGEN: Generating message contract since the operation PostcodeJourneyPlan is neither RPC nor document wrapped.
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        [System.ServiceModel.FaultContractAttribute(typeof(NreOJPService.PostcodeJourneyPlanFault), Action="", Name="PostcodeJourneyPlanFault", Namespace="http://www.thalesgroup.com/ojp/jpdlr")]
-        [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        [System.ServiceModel.ServiceKnownTypeAttribute(typeof(ReturnResponseType))]
-        NreOJPService.PostcodeJourneyPlanResponse1 PostcodeJourneyPlan(NreOJPService.PostcodeJourneyPlanRequest1 request);
-        
-        [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
-        System.Threading.Tasks.Task<NreOJPService.PostcodeJourneyPlanResponse1> PostcodeJourneyPlanAsync(NreOJPService.PostcodeJourneyPlanRequest1 request);
+
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -5035,32 +5027,7 @@ namespace NreOJPService
             return ((NreOJPService.jpservices)(this)).RealtimeJourneyPlanAsync(inValue);
         }
         
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        NreOJPService.PostcodeJourneyPlanResponse1 NreOJPService.jpservices.PostcodeJourneyPlan(NreOJPService.PostcodeJourneyPlanRequest1 request)
-        {
-            return base.Channel.PostcodeJourneyPlan(request);
-        }
-        
-        public NreOJPService.PostcodeJourneyPlanResponse PostcodeJourneyPlan(NreOJPService.PostcodeJourneyPlanRequest PostcodeJourneyPlanRequest)
-        {
-            NreOJPService.PostcodeJourneyPlanRequest1 inValue = new NreOJPService.PostcodeJourneyPlanRequest1();
-            inValue.PostcodeJourneyPlanRequest = PostcodeJourneyPlanRequest;
-            NreOJPService.PostcodeJourneyPlanResponse1 retVal = ((NreOJPService.jpservices)(this)).PostcodeJourneyPlan(inValue);
-            return retVal.PostcodeJourneyPlanResponse;
-        }
-        
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        System.Threading.Tasks.Task<NreOJPService.PostcodeJourneyPlanResponse1> NreOJPService.jpservices.PostcodeJourneyPlanAsync(NreOJPService.PostcodeJourneyPlanRequest1 request)
-        {
-            return base.Channel.PostcodeJourneyPlanAsync(request);
-        }
-        
-        public System.Threading.Tasks.Task<NreOJPService.PostcodeJourneyPlanResponse1> PostcodeJourneyPlanAsync(NreOJPService.PostcodeJourneyPlanRequest PostcodeJourneyPlanRequest)
-        {
-            NreOJPService.PostcodeJourneyPlanRequest1 inValue = new NreOJPService.PostcodeJourneyPlanRequest1();
-            inValue.PostcodeJourneyPlanRequest = PostcodeJourneyPlanRequest;
-            return ((NreOJPService.jpservices)(this)).PostcodeJourneyPlanAsync(inValue);
-        }
+
         
         public virtual System.Threading.Tasks.Task OpenAsync()
         {
