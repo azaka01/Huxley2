@@ -221,6 +221,10 @@ namespace Huxley2.Services
             }
 
             var timeElementName = GetTimeElementName(request.ItemChoiceType);
+
+            // The OJP PostcodeJourneyPlan endpoint treats the time as UK local time
+            // (same as the RealtimeJourneyPlan endpoint). No timezone conversion needed —
+            // the client sends UK local time and we pass it through as-is.
             var dateTimeStr = request.PlannedTime.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
             var enquiryType = request.EnquiryType == 0 ? "STANDARD" : "CHECK_ALTERNATIVES";
             var directTrains = request.DirectTrains ? "true" : "false";
@@ -363,8 +367,10 @@ namespace Huxley2.Services
             var idStr = legEl.Elements().FirstOrDefault(e => e.Name.LocalName == "id")?.Value;
             int.TryParse(idStr, out var id);
 
-            var board = legEl.Elements().FirstOrDefault(e => e.Name.LocalName == "board")?.Value ?? string.Empty;
-            var alight = legEl.Elements().FirstOrDefault(e => e.Name.LocalName == "alight")?.Value ?? string.Empty;
+            var boardEl = legEl.Elements().FirstOrDefault(e => e.Name.LocalName == "board");
+            var board = boardEl?.Elements().FirstOrDefault(e => e.Name.LocalName == "crsCode")?.Value ?? boardEl?.Value ?? string.Empty;
+            var alightEl = legEl.Elements().FirstOrDefault(e => e.Name.LocalName == "alight");
+            var alight = alightEl?.Elements().FirstOrDefault(e => e.Name.LocalName == "crsCode")?.Value ?? alightEl?.Value ?? string.Empty;
 
             var origins = legEl.Elements().Where(e => e.Name.LocalName == "origins").Select(e => e.Value).ToArray();
             var destinations = legEl.Elements().Where(e => e.Name.LocalName == "destinations").Select(e => e.Value).ToArray();
