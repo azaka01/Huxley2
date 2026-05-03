@@ -59,7 +59,7 @@ namespace Huxley2.Services
             try
             {
                 var soapXml = BuildSoapRequest(postcode, stationCrs, originIsPostcode, request);
-                _logger.LogInformation("OJP SOAP REQUEST (postcode):\n{Soap}", soapXml);
+                _logger.LogDebug("OJP SOAP REQUEST (postcode):\n{Soap}", soapXml);
 
                 var httpRequest = new HttpRequestMessage(HttpMethod.Post, _endpoint);
                 httpRequest.Content = new StringContent(soapXml, Encoding.UTF8, "text/xml");
@@ -87,7 +87,7 @@ namespace Huxley2.Services
                 }
 
                 var responseXml = await httpResponse.Content.ReadAsStringAsync();
-                _logger.LogInformation("OJP SOAP RESPONSE (postcode):\n{Soap}", responseXml);
+                _logger.LogDebug("OJP SOAP RESPONSE (postcode):\n{Soap}", responseXml);
 
                 XDocument doc;
                 try

@@ -129,29 +129,6 @@ namespace Huxley2
             ILogger<Startup> logger,
             IUpdateCheckService updateCheckService)
         {
-            // ✅ FIRST — absolute earliest hook into the request
-            app.Use(async (context, next) =>
-            {
-                Console.WriteLine(
-                    $"STDOUT HIT {context.Request.Method} {context.Request.Path} TraceId={context.TraceIdentifier}"
-                );
-
-                logger.LogInformation(
-                    "APPLOG HIT {Method} {Path} TraceId={TraceId}",
-                    context.Request.Method,
-                    context.Request.Path,
-                    context.TraceIdentifier
-                );
-
-                context.Response.OnStarting(() =>
-                {
-                    Console.WriteLine($"STDOUT RESP {context.Response.StatusCode} TraceId={context.TraceIdentifier}");
-                    return Task.CompletedTask;
-                });
-
-                await next();
-            });
-
             logger.LogInformation("Configuring Huxley 2 web API application");
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions
