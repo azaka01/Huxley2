@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,30 +62,15 @@ namespace Huxley2.Services
                 var soapXml = BuildSoapRequest(postcode, stationCrs, originIsPostcode, request);
                 _logger.LogDebug("OJP SOAP REQUEST (postcode):\n{Soap}", soapXml);
 
-                var httpRequest = new HttpRequestMessage(HttpMethod.Post, _endpoint);
+                using var httpRequest = new HttpRequestMessage(HttpMethod.Post, _endpoint);
                 httpRequest.Content = new StringContent(soapXml, Encoding.UTF8, "text/xml");
                 httpRequest.Headers.Add("SOAPAction", "\"\"");
 
                 var authBytes = Encoding.ASCII.GetBytes($"{_username}:{_password}");
                 httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authBytes));
 
-                HttpResponseMessage httpResponse;
-                try
-                {
-                    httpResponse = await _httpClient.SendAsync(httpRequest);
-                }
-                catch (TaskCanceledException ex) when (!ex.CancellationToken.IsCancellationRequested)
-                {
-                    sw.Stop();
-                    _logger.LogError(ex, "OJP SOAP timeout (postcode) ElapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
-                    throw new TimeoutException("OJP PostcodeJourneyPlan request timed out", ex);
-                }
-                catch (HttpRequestException ex)
-                {
-                    sw.Stop();
-                    _logger.LogError(ex, "OJP SOAP communication error (postcode) ElapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
-                    throw new System.ServiceModel.CommunicationException("OJP PostcodeJourneyPlan communication failure", ex);
-                }
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                using var httpResponse = await _httpClient.SendAsync(httpRequest, cts.Token);
 
                 var responseXml = await httpResponse.Content.ReadAsStringAsync();
                 _logger.LogDebug("OJP SOAP RESPONSE (postcode):\n{Soap}", responseXml);
@@ -180,6 +166,18 @@ namespace Huxley2.Services
             catch (OjpUpstreamException) { throw; }
             catch (TimeoutException) { throw; }
             catch (System.ServiceModel.CommunicationException) { throw; }
+            catch (TaskCanceledException ex) when (!ex.CancellationToken.IsCancellationRequested)
+            {
+                sw.Stop();
+                _logger.LogError(ex, "OJP SOAP timeout (postcode) ElapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
+                throw new TimeoutException("OJP PostcodeJourneyPlan request timed out", ex);
+            }
+            catch (HttpRequestException ex)
+            {
+                sw.Stop();
+                _logger.LogError(ex, "OJP SOAP communication error (postcode) ElapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
+                throw new System.ServiceModel.CommunicationException("OJP PostcodeJourneyPlan communication failure", ex);
+            }
             catch (Exception ex)
             {
                 sw.Stop();
@@ -247,12 +245,12 @@ namespace Huxley2.Services
 
         private static string GetTimeElementName(int itemChoiceType)
         {
+            // PostcodeJourneyPlanRequest only supports arriveBy and departBy.
+            // Map firstTrainOfDay/lastTrainOfDay to departBy as a safe default.
             return itemChoiceType switch
             {
                 0 => "arriveBy",
                 1 => "departBy",
-                2 => "firstTrainOfDay",
-                3 => "lastTrainOfDay",
                 _ => "departBy"
             };
         }
