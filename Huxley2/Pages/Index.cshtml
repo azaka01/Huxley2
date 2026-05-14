@@ -194,6 +194,11 @@
                                 </a>
                             </li>
                             <li>
+                                <a href="#postcode-planner">
+                                    Postcode Journey Planner
+                                </a>
+                            </li>
+                            <li>
                                 <a href="#auth">
                                     Authentication
                                 </a>
@@ -355,7 +360,7 @@
         <strong>Improved OJP error handling</strong> — comprehensive mapping of all OJP error codes to appropriate HTTP status codes with user-friendly messages.
     </li>
     <li>
-        <strong>OJP Postcode support confirmed</strong> — investigation confirmed the OJP API supports postcode-based journey planning (implementation planned for a future release).
+        <strong>Postcode Journey Planner</strong> — new <code>GET /api/planner/postcode</code> endpoint that plans journeys from/to a UK postcode, discovering nearby stations automatically via the NRE OJP API.
     </li>
     <li>
         Station responses now include latitude and longitude for map display.
@@ -694,6 +699,50 @@
     </code>
 </p>
 
+<h3 id="postcode-planner">Postcode Journey Planner</h3>
+<p>
+    Plan journeys from or to a UK postcode. The server auto-detects which parameter is a postcode
+    and which is a station CRS code. The OJP API discovers nearby stations and returns full journey
+    plans including multi-leg routes and Underground connections.
+</p>
+<p>
+    <code>
+        <a href="/api/planner/postcode?origin=SW1A1AA&amp;destination=EUS&amp;plannedTime=2026-06-01T10:00:00">/api/planner/postcode?origin={postcode|CRS}&amp;destination={CRS|postcode}&amp;plannedTime={DateTime}</a>
+    </code>
+</p>
+<h5>Parameters:</h5>
+<ul>
+    <li><code>origin</code> (required) — A UK postcode or 3-letter CRS station code</li>
+    <li><code>destination</code> (required) — A UK postcode or 3-letter CRS station code (exactly one must be a postcode)</li>
+    <li><code>plannedTime</code> (required) — Journey date/time in ISO 8601 format (UK local time)</li>
+    <li><code>itemChoiceType</code> (optional, default 0) — Supported values: 0 = Arrive By, 1 = Depart By</li>
+    <li><code>enquiryType</code> (optional, default 0) — 0 = Standard, 1 = Check Alternatives</li>
+    <li><code>directTrains</code> (optional, default false) — Restrict to direct services only</li>
+</ul>
+<h5>Examples:</h5>
+<ul>
+    <li>
+        Postcode as origin:
+        <code><a href="/api/planner/postcode?origin=SW1A1AA&amp;destination=EUS&amp;plannedTime=2026-06-01T10:00:00">/api/planner/postcode?origin=SW1A1AA&amp;destination=EUS&amp;plannedTime=2026-06-01T10:00:00</a></code>
+    </li>
+    <li>
+        Postcode as destination:
+        <code><a href="/api/planner/postcode?origin=WAT&amp;destination=TW32LN&amp;plannedTime=2026-06-01T10:00:00&amp;itemChoiceType=1">/api/planner/postcode?origin=WAT&amp;destination=TW32LN&amp;plannedTime=2026-06-01T10:00:00&amp;itemChoiceType=1</a></code>
+    </li>
+</ul>
+<h5>Response:</h5>
+<p>
+    Returns a JSON object with <code>postcodeStations</code> (nearby stations with CRS code, name, and distance in miles)
+    and <code>outwardJourneys</code> (journey plans grouped by selected station, each containing legs with departure/arrival
+    times, platforms, operators, fares, and service bulletins).
+</p>
+<h5>Constraints:</h5>
+<ul>
+    <li>Exactly one of origin/destination must be a UK postcode; the other must be a CRS code.</li>
+    <li>Postcodes are accepted with or without spaces, in any case (e.g. "SW1A 1AA", "sw1a1aa").</li>
+    <li>Some postcodes may return 404 if the OJP API has no station mappings for that area.</li>
+</ul>
+
 <h3 id="nearby">Nearby Services</h3>
 <p>
     Get real-time train services from stations near a GPS location in a single call.
@@ -761,8 +810,9 @@
         Pass as <code>accessToken</code> query parameter, or configure <code>DarwinAccessToken</code> in app settings.
     </li>
     <li>
-        <strong>Journey Planner</strong> — Requires a separate OJP username and password from NRE.
+        <strong>Journey Planner &amp; Postcode Planner</strong> — Requires a separate OJP username and password from NRE.
         Configure <code>ojpEndpoint</code>, <code>ojpUsername</code>, and <code>ojpPassword</code> in app settings.
+        Both the station-to-station planner and postcode planner use the same credentials.
     </li>
     <li>
         <strong>Nearby Services</strong> — Uses the server-configured <code>DarwinAccessToken</code> for upstream calls.

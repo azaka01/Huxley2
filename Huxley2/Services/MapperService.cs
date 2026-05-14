@@ -106,24 +106,12 @@ namespace Huxley2.Services {
 
         private static ItemChoiceType1 GetItemChoiceType(JourneyPlannerRequest request)
         {
-            if (request.ItemChoiceType == 0)
-            {
-                return ItemChoiceType1.arriveBy;
-            }
-            else if (request.ItemChoiceType == 1)
-            {
-                return ItemChoiceType1.departBy;
-            }
-            else if (request.ItemChoiceType == 2)
-            {
-                return ItemChoiceType1.firstTrainOfDay;
-            }
-            else if (request.ItemChoiceType == 3)
-            {
-                return ItemChoiceType1.lastTrainOfDay;
-            }
-            return ItemChoiceType1.arriveBy;
-
+            return request.ItemChoiceType switch {
+                1 => ItemChoiceType1.departBy,
+                2 => ItemChoiceType1.firstTrainOfDay,
+                3 => ItemChoiceType1.lastTrainOfDay,
+                _ => ItemChoiceType1.arriveBy
+            };
         }
 
         private static RealtimeEnquiryType GetRealtimeEnquiryType(JourneyPlannerRequest request)

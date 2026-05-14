@@ -102,6 +102,12 @@ namespace Huxley2
             services.AddSingleton<IServiceDetailsService, ServiceDetailsService>();
             services.AddSingleton<IUpdateCheckService, UpdateCheckService>();
             services.AddSingleton<IJourneyPlannerService, JourneyPlannerService>();
+            services.AddSingleton<IPostcodeJourneyPlannerService>(sp =>
+                new PostcodeJourneyPlannerService(
+                    sp.GetRequiredService<ILoggerFactory>().CreateLogger<PostcodeJourneyPlannerService>(),
+                    sp.GetRequiredService<IStationService>(),
+                    sp.GetRequiredService<HttpClient>(),
+                    sp.GetRequiredService<IConfiguration>()));
             services.AddSingleton<INearbyStationService, NearbyStationService>();
             // Singleton HTTP client is best practice and is fine as we don't use authentication or cookies
             // No interface is available but we can mock it by passing in a fake handler to the constructor
@@ -123,29 +129,6 @@ namespace Huxley2
             ILogger<Startup> logger,
             IUpdateCheckService updateCheckService)
         {
-            // ✅ FIRST — absolute earliest hook into the request
-            app.Use(async (context, next) =>
-            {
-                Console.WriteLine(
-                    $"STDOUT HIT {context.Request.Method} {context.Request.Path} TraceId={context.TraceIdentifier}"
-                );
-
-                logger.LogInformation(
-                    "APPLOG HIT {Method} {Path} TraceId={TraceId}",
-                    context.Request.Method,
-                    context.Request.Path,
-                    context.TraceIdentifier
-                );
-
-                context.Response.OnStarting(() =>
-                {
-                    Console.WriteLine($"STDOUT RESP {context.Response.StatusCode} TraceId={context.TraceIdentifier}");
-                    return Task.CompletedTask;
-                });
-
-                await next();
-            });
-
             logger.LogInformation("Configuring Huxley 2 web API application");
 
             app.UseForwardedHeaders(new ForwardedHeadersOptions

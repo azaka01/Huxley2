@@ -903,6 +903,385 @@ namespace NreOJPService
     {
     }
     
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://www.thalesgroup.com/ojp/jpdlr")]
+    public partial class PostcodeJourneyPlanFault : ReturnResponseType
+    {
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://www.thalesgroup.com/ojp/common")]
+    public partial class PostcodeDetails
+    {
+        
+        private string postcodeField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public string postcode
+        {
+            get
+            {
+                return this.postcodeField;
+            }
+            set
+            {
+                this.postcodeField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://www.thalesgroup.com/ojp/jpdlr")]
+    public partial class PostcodeJourneyPlanOrigin
+    {
+        
+        private PostcodeDetails postcodeDetailsField;
+        
+        private CrsCode stationField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Namespace="http://www.thalesgroup.com/ojp/common", Order=0)]
+        public PostcodeDetails postcodeDetails
+        {
+            get
+            {
+                return this.postcodeDetailsField;
+            }
+            set
+            {
+                this.postcodeDetailsField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Namespace="http://www.thalesgroup.com/ojp/common", Order=1)]
+        public CrsCode station
+        {
+            get
+            {
+                return this.stationField;
+            }
+            set
+            {
+                this.stationField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://www.thalesgroup.com/ojp/jpdlr")]
+    public partial class PostcodeJourneyPlanDestination
+    {
+        
+        private PostcodeDetails postcodeDetailsField;
+        
+        private CrsCode stationField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Namespace="http://www.thalesgroup.com/ojp/common", Order=0)]
+        public PostcodeDetails postcodeDetails
+        {
+            get
+            {
+                return this.postcodeDetailsField;
+            }
+            set
+            {
+                this.postcodeDetailsField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Namespace="http://www.thalesgroup.com/ojp/common", Order=1)]
+        public CrsCode station
+        {
+            get
+            {
+                return this.stationField;
+            }
+            set
+            {
+                this.stationField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://www.thalesgroup.com/ojp/jpdlr")]
+    public partial class PostcodeJourneyPlanRequestOutwardTime
+    {
+        
+        private System.DateTime itemField;
+        
+        private ItemChoiceType1 itemElementNameField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("arriveBy", typeof(System.DateTime), Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("departBy", typeof(System.DateTime), Order=0)]
+        [System.Xml.Serialization.XmlChoiceIdentifierAttribute("ItemElementName")]
+        public System.DateTime Item
+        {
+            get
+            {
+                return this.itemField;
+            }
+            set
+            {
+                this.itemField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public ItemChoiceType1 ItemElementName
+        {
+            get
+            {
+                return this.itemElementNameField;
+            }
+            set
+            {
+                this.itemElementNameField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://www.thalesgroup.com/ojp/jpdlr")]
+    public partial class PostcodeJourneyPlanRequest
+    {
+        
+        private PostcodeJourneyPlanOrigin originField;
+        
+        private PostcodeJourneyPlanDestination destinationField;
+        
+        private RealtimeEnquiryType realtimeEnquiryField;
+        
+        private PostcodeJourneyPlanRequestOutwardTime outwardTimeField;
+        
+        private bool directTrainsField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public PostcodeJourneyPlanOrigin origin
+        {
+            get
+            {
+                return this.originField;
+            }
+            set
+            {
+                this.originField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        public PostcodeJourneyPlanDestination destination
+        {
+            get
+            {
+                return this.destinationField;
+            }
+            set
+            {
+                this.destinationField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=2)]
+        public RealtimeEnquiryType realtimeEnquiry
+        {
+            get
+            {
+                return this.realtimeEnquiryField;
+            }
+            set
+            {
+                this.realtimeEnquiryField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=3)]
+        public PostcodeJourneyPlanRequestOutwardTime outwardTime
+        {
+            get
+            {
+                return this.outwardTimeField;
+            }
+            set
+            {
+                this.outwardTimeField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=4)]
+        public bool directTrains
+        {
+            get
+            {
+                return this.directTrainsField;
+            }
+            set
+            {
+                this.directTrainsField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://www.thalesgroup.com/ojp/jpdlr")]
+    public partial class PostcodeStation
+    {
+        
+        private string crsCodeField;
+        
+        private double distanceField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public string crsCode
+        {
+            get
+            {
+                return this.crsCodeField;
+            }
+            set
+            {
+                this.crsCodeField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=1)]
+        public double distance
+        {
+            get
+            {
+                return this.distanceField;
+            }
+            set
+            {
+                this.distanceField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://www.thalesgroup.com/ojp/jpdlr")]
+    public partial class PostcodeResponseEntry
+    {
+        
+        private string selectedStationField;
+        
+        private Journey[] outwardJourneyField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public string selectedStation
+        {
+            get
+            {
+                return this.selectedStationField;
+            }
+            set
+            {
+                this.selectedStationField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("outwardJourney", Order=1)]
+        public Journey[] outwardJourney
+        {
+            get
+            {
+                return this.outwardJourneyField;
+            }
+            set
+            {
+                this.outwardJourneyField = value;
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://www.thalesgroup.com/ojp/jpdlr")]
+    public partial class PostcodeJourneyPlanResponse : ReturnResponseType
+    {
+        
+        private System.DateTime generatedTimeField;
+        
+        private PostcodeResponseEntry[] postcodeResponseField;
+        
+        private PostcodeStation[] postcodeStationsField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=0)]
+        public System.DateTime generatedTime
+        {
+            get
+            {
+                return this.generatedTimeField;
+            }
+            set
+            {
+                this.generatedTimeField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("postcodeResponse", Order=1)]
+        public PostcodeResponseEntry[] postcodeResponse
+        {
+            get
+            {
+                return this.postcodeResponseField;
+            }
+            set
+            {
+                this.postcodeResponseField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("postcodeStations", Order=2)]
+        public PostcodeStation[] postcodeStations
+        {
+            get
+            {
+                return this.postcodeStationsField;
+            }
+            set
+            {
+                this.postcodeStationsField = value;
+            }
+        }
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="https://ojp.nationalrail.co.uk", ConfigurationName="NreOJPService.jpservices")]
     public interface jpservices
@@ -937,6 +1316,8 @@ namespace NreOJPService
         
         [System.ServiceModel.OperationContractAttribute(Action="", ReplyAction="*")]
         System.Threading.Tasks.Task<NreOJPService.RealtimeJourneyPlanResponse1> RealtimeJourneyPlanAsync(NreOJPService.RealtimeJourneyPlanRequest1 request);
+        
+
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -4497,6 +4878,46 @@ namespace NreOJPService
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
+    public partial class PostcodeJourneyPlanRequest1
+    {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.thalesgroup.com/ojp/jpdlr", Order=0)]
+        public NreOJPService.PostcodeJourneyPlanRequest PostcodeJourneyPlanRequest;
+        
+        public PostcodeJourneyPlanRequest1()
+        {
+        }
+        
+        public PostcodeJourneyPlanRequest1(NreOJPService.PostcodeJourneyPlanRequest PostcodeJourneyPlanRequest)
+        {
+            this.PostcodeJourneyPlanRequest = PostcodeJourneyPlanRequest;
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
+    public partial class PostcodeJourneyPlanResponse1
+    {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://www.thalesgroup.com/ojp/jpdlr", Order=0)]
+        public NreOJPService.PostcodeJourneyPlanResponse PostcodeJourneyPlanResponse;
+        
+        public PostcodeJourneyPlanResponse1()
+        {
+        }
+        
+        public PostcodeJourneyPlanResponse1(NreOJPService.PostcodeJourneyPlanResponse PostcodeJourneyPlanResponse)
+        {
+            this.PostcodeJourneyPlanResponse = PostcodeJourneyPlanResponse;
+        }
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.1.0")]
     public interface jpservicesChannel : NreOJPService.jpservices, System.ServiceModel.IClientChannel
     {
@@ -4605,6 +5026,8 @@ namespace NreOJPService
             inValue.RealtimeJourneyPlanRequest = RealtimeJourneyPlanRequest;
             return ((NreOJPService.jpservices)(this)).RealtimeJourneyPlanAsync(inValue);
         }
+        
+
         
         public virtual System.Threading.Tasks.Task OpenAsync()
         {
