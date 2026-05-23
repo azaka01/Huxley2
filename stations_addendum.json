@@ -268,5 +268,35 @@
         "StationName": "Leven",
         "CrsCode": "LEV", 
         "Longitude": -3.002
+    },
+    {
+        "Latitude": 55.1829,
+        "StationName": "Ashington",
+        "CrsCode": "ASL",
+        "Longitude": -1.573
+    },
+    {
+        "Latitude": 55.1404,
+        "StationName": "Bedlington",
+        "CrsCode": "BEJ",
+        "Longitude": -1.567
+    },
+    {
+        "Latitude": 55.0755,
+        "StationName": "Seaton Delaval",
+        "CrsCode": "SEJ",
+        "Longitude": -1.5372
+    },
+    {
+        "Latitude": 55.0331,
+        "StationName": "Northumberland Park",
+        "CrsCode": "NOP",
+        "Longitude": -1.519821
+    },
+    {
+        "Latitude": 54.972671,
+        "StationName": "Manors",
+        "CrsCode": "MAS",
+        "Longitude": -1.605632
     }
 ]
