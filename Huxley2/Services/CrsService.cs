@@ -87,6 +87,16 @@ namespace Huxley2.Services
             {
                 return query;
             }
+
+            // If query looks like a CRS code (3 alpha chars) but isn't in our records,
+            // pass it through directly. This handles new stations (e.g. from the addendum)
+            // that the staff API/CSV doesn't know about yet, and avoids the partial name
+            // match accidentally resolving it to a different station (e.g. ASL -> ASLOCKTON -> ALK).
+            if (query.Length == 3 && query.All(char.IsLetter))
+            {
+                return query.ToUpperInvariant();
+            }
+
             // If query matches a single station name return the code
             if (_crsRecordsByName.TryGetValue(query, out var crs))
             {
