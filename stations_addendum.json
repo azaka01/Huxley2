@@ -298,5 +298,11 @@
         "StationName": "Manors",
         "CrsCode": "MAS",
         "Longitude": -1.605632
+    },
+    {
+        "Latitude": 52.1741,
+        "StationName": "Cambridge South",
+        "CrsCode": "CMS",
+        "Longitude": 0.1310
     }
 ]
