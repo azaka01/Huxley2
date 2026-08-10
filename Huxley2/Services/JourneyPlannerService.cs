@@ -116,7 +116,7 @@ namespace Huxley2.Services
             }
             catch (CommunicationException ex)
             {
-                _logger.LogWarning("OJP SOAP communication failure (calling points): {Message}", ex.Message);
+                _logger.LogWarning(ex, "OJP SOAP communication failure (calling points): {Message}", ex.Message);
                 throw; // controller maps to 502
             }
             finally
@@ -402,7 +402,7 @@ namespace Huxley2.Services
             catch (CommunicationException ex)
             {
                 sw.Stop();
-                _logger.LogWarning("OJP SOAP communication error ElapsedMs={ElapsedMs} Message={Message}",
+                _logger.LogWarning(ex, "OJP SOAP communication error ElapsedMs={ElapsedMs} Message={Message}",
                     sw.ElapsedMilliseconds, ex.Message);
                 throw;
             }
