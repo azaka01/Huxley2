@@ -30,7 +30,10 @@ namespace Huxley2
                 })
                 .ConfigureServices((hostingContext, serviceCollection) =>
                 {
-                    serviceCollection.AddApplicationInsightsTelemetry();
+                    serviceCollection.AddApplicationInsightsTelemetry(options =>
+                    {
+                        options.EnableAdaptiveSampling = true;
+                    });
                     
                     serviceCollection
                         .Configure<AzureFileLoggerOptions>(options =>

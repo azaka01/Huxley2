@@ -53,12 +53,12 @@ namespace Huxley2.Controllers
                 var clock = Stopwatch.StartNew();
                 var service = await _serviceDetailsService.GetServiceDetailsAsync(request);
                 clock.Stop();
-                _logger.LogInformation("Open LDB API time {ElapsedMilliseconds:#,#}ms",
+                _logger.LogDebug("Open LDB API time {ElapsedMilliseconds:#,#}ms",
                     clock.ElapsedMilliseconds);
 
                 var checksum = _serviceDetailsService.GenerateChecksum(service);
                 Response.Headers[HeaderNames.ETag] = checksum;
-                _logger.LogInformation($"ETag: {checksum}");
+                _logger.LogDebug("ETag: {Checksum}", checksum);
 
                 return service;
             }

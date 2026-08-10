@@ -27,7 +27,7 @@ namespace Huxley2.Services
 
         public async Task<BaseStationBoard> GetDepartureBoardAsync(StationBoardRequest request)
         {
-            _logger.LogInformation($"Calling departure board SOAP endpoint for {request.Crs}");
+            _logger.LogDebug("Calling departure board SOAP endpoint for {Crs}", request.Crs);
             if (request.Expand)
             {
                 var boardWithDetails = await _soapClient.GetDepBoardWithDetailsAsync(
@@ -42,7 +42,7 @@ namespace Huxley2.Services
 
         public async Task<BaseStationBoard> GetArrivalBoardAsync(StationBoardRequest request)
         {
-            _logger.LogInformation($"Calling arrival board SOAP endpoint for {request.Crs}");
+            _logger.LogDebug("Calling arrival board SOAP endpoint for {Crs}", request.Crs);
             if (request.Expand)
             {
                 var boardWithDetails = await _soapClient.GetArrBoardWithDetailsAsync(
@@ -57,7 +57,7 @@ namespace Huxley2.Services
 
         public async Task<BaseStationBoard> GetArrivalDepartureBoardAsync(StationBoardRequest request)
         {
-            _logger.LogInformation($"Calling arrival departure board SOAP endpoint for {request.Crs}");
+            _logger.LogDebug("Calling arrival departure board SOAP endpoint for {Crs}", request.Crs);
             if (request.Expand)
             {
                 var boardWithDetails = await _soapClient.GetArrDepBoardWithDetailsAsync(
@@ -72,7 +72,7 @@ namespace Huxley2.Services
 
         public async Task<BaseStationBoard> GetNextDeparturesAsync(StationBoardRequest request)
         {
-            _logger.LogInformation($"Calling next departures SOAP endpoint for {request.Crs}");
+            _logger.LogDebug("Calling next departures SOAP endpoint for {Crs}", request.Crs);
             if (request.Expand)
             {
                 var boardWithDetails = await _soapClient.GetNextDeparturesWithDetailsAsync(
@@ -87,7 +87,7 @@ namespace Huxley2.Services
 
         public async Task<BaseStationBoard> GetFastestDeparturesAsync(StationBoardRequest request)
         {
-            _logger.LogInformation($"Calling fastest departures SOAP endpoint for {request.Crs}");
+            _logger.LogDebug("Calling fastest departures SOAP endpoint for {Crs}", request.Crs);
             if (request.Expand)
             {
                 var boardWithDetails = await _soapClient.GetFastestDeparturesWithDetailsAsync(

@@ -23,8 +23,8 @@ namespace Huxley2.Soap
             try
             {
                 var soap = MessageToString(ref request);
-                _logger.LogInformation("OJP SOAP REQUEST:\n{Soap}", soap);
-                _logger.LogInformation("OJP SOAP ENDPOINT: {RemoteAddress}", channel.RemoteAddress?.Uri?.ToString());
+                _logger.LogDebug("OJP SOAP REQUEST:\n{Soap}", soap);
+                _logger.LogDebug("OJP SOAP ENDPOINT: {RemoteAddress}", channel.RemoteAddress?.Uri?.ToString());
             }
             catch (ObjectDisposedException ex)
             {
@@ -51,7 +51,7 @@ namespace Huxley2.Soap
             try
             {
                 var soap = MessageToString(ref reply);
-                _logger.LogInformation("OJP SOAP RESPONSE:\n{Soap}", soap);
+                _logger.LogDebug("OJP SOAP RESPONSE:\n{Soap}", soap);
 
                 // New: capture fault details for service layer
                 CaptureFaultIfPresent(soap);

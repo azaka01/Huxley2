@@ -116,13 +116,13 @@ namespace Huxley2.Services
             }
             catch (CommunicationException ex)
             {
-                _logger.LogError(ex, "OJP SOAP communication failure (calling points)");
+                _logger.LogWarning("OJP SOAP communication failure (calling points): {Message}", ex.Message);
                 throw; // controller maps to 502
             }
             finally
             {
                 clock.Stop();
-                _logger.LogInformation("CallingPoints SOAP elapsed {ElapsedMs}ms", clock.ElapsedMilliseconds);
+                _logger.LogDebug("CallingPoints SOAP elapsed {ElapsedMs}ms", clock.ElapsedMilliseconds);
             }
         }
 
@@ -179,7 +179,7 @@ namespace Huxley2.Services
             });
 
             var sw = Stopwatch.StartNew();
-            _logger.LogInformation("Calling OJP SOAP RealtimeJourneyPlan");
+            _logger.LogDebug("Calling OJP SOAP RealtimeJourneyPlan");
 
             try
             {
@@ -330,7 +330,7 @@ namespace Huxley2.Services
                 }
 
                 sw.Stop();
-                _logger.LogInformation(
+                _logger.LogDebug(
                    "OJP SOAP success GeneratedTime={GeneratedTime:o} NrsStatus={NrsStatus} Response={Response} ElapsedMs={ElapsedMs}",
                    rtResponse.generatedTime,
                    rtResponse.nrsStatus,
@@ -402,9 +402,8 @@ namespace Huxley2.Services
             catch (CommunicationException ex)
             {
                 sw.Stop();
-                _logger.LogError(ex, "OJP SOAP communication error ElapsedMs={ElapsedMs}", sw.ElapsedMilliseconds);
-                if (ex.InnerException != null)
-                    _logger.LogError(ex.InnerException, "OJP SOAP inner exception");
+                _logger.LogWarning("OJP SOAP communication error ElapsedMs={ElapsedMs} Message={Message}",
+                    sw.ElapsedMilliseconds, ex.Message);
                 throw;
             }
             catch (Exception ex)

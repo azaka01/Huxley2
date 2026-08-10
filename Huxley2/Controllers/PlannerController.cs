@@ -39,7 +39,7 @@ namespace Huxley2.Controllers
         [ProducesResponseType(typeof(ApiError), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<OjpResponse>> Get([FromRoute] JourneyPlannerRequest request)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "JourneyPlan request. Origin={Origin} Destination={Destination} PlannedTime={PlannedTime}",
                 request.OriginCrs, request.DestinationCrs, request.PlannedTime);
 
@@ -60,7 +60,7 @@ namespace Huxley2.Controllers
                     });
                 }
 
-                _logger.LogInformation("JourneyPlan success. GeneratedAt={GeneratedAt}", ojpResponse.GeneratedAt);
+                _logger.LogDebug("JourneyPlan success. GeneratedAt={GeneratedAt}", ojpResponse.GeneratedAt);
                 return Ok(ojpResponse);
             }
             catch (Huxley2.Exceptions.OjpFaultException ex)
@@ -127,7 +127,7 @@ namespace Huxley2.Controllers
             finally
             {
                 clock.Stop();
-                _logger.LogInformation("JourneyPlan elapsed {ElapsedMs}ms", clock.ElapsedMilliseconds);
+                _logger.LogDebug("JourneyPlan elapsed {ElapsedMs}ms", clock.ElapsedMilliseconds);
             }
         }
 
@@ -143,7 +143,7 @@ namespace Huxley2.Controllers
         [ProducesResponseType(typeof(ApiError), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<OjpCallingPointsResponse>> GetPoints([FromRoute] JourneyCallingPointsRequest request)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "CallingPoints request. Origin={Origin} Destination={Destination} Departure={Departure} Arrival={Arrival}",
                 request.OriginCrs, request.DestinationCrs, request.DepartureTime, request.ArrivalTime);
 
@@ -164,7 +164,7 @@ namespace Huxley2.Controllers
                     });
                 }
 
-                _logger.LogInformation("CallingPoints success. GeneratedAt={GeneratedAt}", ojpResponse.GeneratedAt);
+                _logger.LogDebug("CallingPoints success. GeneratedAt={GeneratedAt}", ojpResponse.GeneratedAt);
                 return Ok(ojpResponse);
             }
             catch (Huxley2.Exceptions.OjpFaultException ex)
@@ -231,7 +231,7 @@ namespace Huxley2.Controllers
             finally
             {
                 clock.Stop();
-                _logger.LogInformation("CallingPoints elapsed {ElapsedMs}ms", clock.ElapsedMilliseconds);
+                _logger.LogDebug("CallingPoints elapsed {ElapsedMs}ms", clock.ElapsedMilliseconds);
             }
         }
 
